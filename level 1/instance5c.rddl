@@ -73,8 +73,6 @@ instance inst_mars_rover_science_mission_5c {
 	init-state {
 		pos-x(d1) = 4.415343981600355;
 		pos-y(d1) = -7.152244002369164;
-		vel-x(d1) = 0.0;
-		vel-y(d1) = 0.0;
 	};
 	max-nondef-actions = pos-inf;
 	horizon = 100;

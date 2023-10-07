@@ -3,6 +3,7 @@
 // Relaxations:
 // - Single agent
 // - Minerals are point locations
+// - Agent's movement based on displacement and not power
 //
 // The goal here is to harvest as many high-value mineral
 // as possible within the time constraints.
@@ -33,7 +34,6 @@ non-fluents rover2 {
 
 }
 
-// Specify three power plants with default settings
 instance inst_mars_rover_0 {
 
 	domain = mars_rover_science_mission;
@@ -41,8 +41,6 @@ instance inst_mars_rover_0 {
 	non-fluents = rover2;
 
 	init-state {
-		vel-x(d1) = 1;
-        vel-y(d1) = 1;
         pos-x(d1) = 0;
         pos-y(d1) = 0;
 	};
