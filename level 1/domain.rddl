@@ -77,4 +77,5 @@ domain mars_rover_science_mission {
     termination {
         forall_{?m : mineral} [ mineral-harvested(?m) ];
     };
+    
 }
