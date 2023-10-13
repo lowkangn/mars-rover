@@ -1,11 +1,15 @@
 ////////////////////////////////////////////////////////////////////
-// Level 1 env
-// A simple continuous MDP for single agent mars rover science mission.  
+// Simplified version of mars rover mission.  
+// Relaxations:
+// - Single agent
+// - Minerals are point locations
+// - Agent's movement based on displacement and not power
+// - Problem space is a grid world
 //
-// The goal here is to harvest as many high-value mineral (within their
-// designated radii) as possible within the time constraints.
+// The goal here is to harvest as many high-value mineral
+// as possible within the time constraints.
 //
-// The states for each rover is the x,y positions and velocities.
+// The states for each rover are the x,y positions.
 // The actions are movement in the x,y axes.
 // A third action for each rover is mineral harvesting when possible.
 //
@@ -22,47 +26,52 @@ domain mars_rover_science_mission {
 	}; 
 
     pvariables {
-
-        // rover constants
-        MAX-POWER(rover): { non-fluent, real, default = 0.1 };         // control norm constraint
-        SCALE-FACTOR    : { non-fluent, real, default = 0.1 };          // time scale factor for dynamic equations
-
         // minerals constants
-        MINERAL-VALUE(mineral): { non-fluent, real, default = 1 };            // mineral harvesting value
-        MINERAL-POS-X(mineral): { non-fluent, real, default = 0 };            // mineral x location
-        MINERAL-POS-Y(mineral): { non-fluent, real, default = 0 };            // mineral y location
-        MINERAL-AREA(mineral) : { non-fluent, real, default = 0.5 };          // mineral harvesting area (included for rendering purposes)
+        MINERAL-AREA(mineral) : { non-fluent, real, default = 0.2 };            // mineral harvesting area (included for rendering purposes)
+        MINERAL-VALUE(mineral): { non-fluent, real, default = 1 };              // mineral harvesting value
+        MINERAL-POS-X(mineral): { non-fluent, int, default = 0 };               // mineral x location
+        MINERAL-POS-Y(mineral): { non-fluent, int, default = 0 };               // mineral y location
 
         // states
-        pos-x(rover)    : { state-fluent, real, default = 0 };          // rover x position
-        pos-y(rover)    : { state-fluent, real, default = 0 };          // rover y position
-        mineral-harvested(mineral) : { state-fluent, bool, default = false }; // if a mineral has been mineral mineral harvested or not
+        pos-x(rover)    : { state-fluent, int, default = 0 };                   // rover x position
+        pos-y(rover)    : { state-fluent, int, default = 0 };                   // rover y position
+        mineral-harvested(mineral) : { state-fluent, bool, default = false };   // if a mineral has been mineral mineral harvested or not
+
+        // interm & derived fluents
+        u-x(rover) : { interm-fluent, int };                                    // displacement in x direction
+        u-y(rover) : { interm-fluent, int };                                    // displacement in y direction
 
         // actions
-        move-x(rover)      : { action-fluent, real, default = 0 };     // force input in x direction
-        move-y(rover)      : { action-fluent, real, default = 0 };     // force input in y direction
-        harvest(rover)      : { action-fluent, bool, default = false }; // mineral harvesting action
+        move-x(rover)      : { action-fluent, bool, default = true };           // true = 1 square right, false = 1 square left
+        move-y(rover)      : { action-fluent, bool, default = true };           // true = 1 square up, false = 1 square down
+        harvest(rover)     : { action-fluent, bool, default = false };          // mineral harvesting action
     };
 
     cpfs {
 
-        pos-x'(?d) = pos-x(?d) + move-x(?d);
-        pos-y'(?d) = pos-y(?d) + move-y(?d); 
+        u-x(?d) = if( move-x(?d) = true )
+                    then 1
+                    else -1;
 
-        // mineral harvesting to be within 0.01 to avoid floating point error
+        u-y(?d) = if( move-y(?d) = true )
+                    then 1
+                    else -1;
+
+        pos-x'(?d) = pos-x(?d) + move-x(?d);
+        pos-y'(?d) = pos-y(?d) + move-y(?d);
+
         mineral-harvested'(?m) = mineral-harvested(?m) |
                 ~mineral-harvested(?m) ^ [exists_{?d : rover}
-                    [sqrt [ pow[pos-x(?d) - MINERAL-POS-X(?m),2] + pow[pos-y(?d) - MINERAL-POS-Y(?m),2]] < 0.01 ^ harvest(?d)] ];
+                    [pos-x(?d) == MINERAL-POS-X(?m) ^ pos-y(?d) == MINERAL-POS-Y(?m) ^ harvest(?d)]];
 
     };
 
     // R = -sum u-x^2 + u-y^2 + sum minerals harvested - sum harvest actions
-    reward = [-sum_{?d : rover} [ 0.5*pow[move-x(?d), 2] + 0.5*pow[move-y(?d), 2]]] +
+    reward = [-sum_{?d : rover} [ move-x(?d) + move-y(?d)]] +
              [sum_{?m : mineral }[if (exists_{?d : rover}
-                        [ sqrt [ pow[pos-x(?d) - MINERAL-POS-X(?m),2] + pow[pos-y(?d) - MINERAL-POS-Y(?m),2]] < 0.01
+                        [pos-x(?d) == MINERAL-POS-X(?m) ^ pos-y(?d) == MINERAL-POS-Y(?m)
 						 ^ harvest(?d) ^ ~mineral-harvested(?m)])
                             then MINERAL-VALUE(?m)
                             else 0.0]]
              - [sum_{?d : rover} [harvest(?d)]];
-
 }
