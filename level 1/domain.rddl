@@ -26,6 +26,10 @@ domain mars_rover_science_mission {
 	}; 
 
     pvariables {
+
+        // rover constants
+        MAX-STEP(rover): { non-fluent, int, default = 1 };
+
         // minerals constants
         MINERAL-AREA(mineral) : { non-fluent, real, default = 0.2 };            // mineral harvesting area (included for rendering purposes)
         MINERAL-VALUE(mineral): { non-fluent, real, default = 1 };              // mineral harvesting value
@@ -62,4 +66,15 @@ domain mars_rover_science_mission {
                             then MINERAL-VALUE(?m)
                             else 0.0]]
              - [sum_{?d : rover} [harvest(?d)]];
+
+    action-preconditions {
+        forall_{?d : rover} [ move-x(?d) >= -MAX-STEP(?d) ];
+        forall_{?d : rover} [ move-x(?d) <= MAX-STEP(?d) ];
+        forall_{?d : rover} [ move-y(?d) >= -MAX-STEP(?d) ];
+        forall_{?d : rover} [ move-y(?d) <= MAX-STEP(?d) ];
+    };
+
+    termination {
+        forall_{?m : mineral} [ mineral-harvested(?m) ];
+    };
 }

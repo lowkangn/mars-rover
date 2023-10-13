@@ -53,7 +53,7 @@ domain mars_rover_science_mission {
 
     cpfs {
 
-        power(?d) = sqrt[ pow[power-x(?d), 2] + pow[power-y(?d), 2]];
+        power(?d) = sqrt[pow[power-x(?d), 2] + pow[power-y(?d), 2]];
 
         u-x(?d) = if(power(?d) >= MAX-POWER(?d))
                     then MAX-POWER(?d) * power-x(?d) / power(?d)
