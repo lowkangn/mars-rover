@@ -28,7 +28,9 @@ domain mars_rover_science_mission {
     pvariables {
 
         // rover constants
-        MAX-STEP(rover): { non-fluent, int, default = 1 };
+        MAX-STEP(rover): { non-fluent, int, default = 1 };                      // max distance rover can move in x and y direction for each time step
+        MAX-X          : { non-fluent, int, default = 10 };                     // max distance in positive and negative x direction
+        MAX-Y          : { non-fluent, int, default = 10 };                     // max distance in positive and negative y direction
 
         // minerals constants
         MINERAL-AREA(mineral) : { non-fluent, real, default = 0.2 };            // mineral harvesting area (included for rendering purposes)
@@ -67,11 +69,28 @@ domain mars_rover_science_mission {
                             else 0.0]]
              - [sum_{?d : rover} [harvest(?d)]];
 
+    state-invariants {
+        forall_{?m : mineral} [MINERAL-POS-X(?m) < MAX-X ];
+        forall_{?m : mineral} [MINERAL-POS-X(?m) > -MAX-X ];
+        forall_{?m : mineral} [MINERAL-POS-Y(?m) < MAX-Y ];
+        forall_{?m : mineral} [MINERAL-POS-Y(?m) > -MAX-Y ];
+
+        forall_{?d : rover} [pos-x(?d) <= MAX-X ];
+        forall_{?d : rover} [pos-x(?d) >= -MAX-X ];
+        forall_{?d : rover} [pos-y(?d) <= MAX-Y ];
+        forall_{?d : rover} [pos-y(?d) >= -MAX-Y ];
+    };
+
     action-preconditions {
         forall_{?d : rover} [ move-x(?d) >= -MAX-STEP(?d) ];
         forall_{?d : rover} [ move-x(?d) <= MAX-STEP(?d) ];
         forall_{?d : rover} [ move-y(?d) >= -MAX-STEP(?d) ];
         forall_{?d : rover} [ move-y(?d) <= MAX-STEP(?d) ];
+
+        forall_{?d : rover} [ pos-x(?d) + move-x(?d) >= -MAX-X ];
+        forall_{?d : rover} [ pos-x(?d) + move-x(?d) <= MAX-X ];
+        forall_{?d : rover} [ pos-y(?d) + move-y(?d) >= -MAX-Y ];
+        forall_{?d : rover} [ pos-y(?d) + move-y(?d) <= MAX-Y ];
     };
 
     termination {
