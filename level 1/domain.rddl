@@ -26,6 +26,12 @@ domain mars_rover_science_mission {
 	}; 
 
     pvariables {
+
+        // rover constants
+        MAX-STEP(rover): { non-fluent, int, default = 1 };                      // max distance rover can move in x and y direction for each time step
+        MAX-X          : { non-fluent, int, default = 10 };                     // max distance in positive and negative x direction
+        MAX-Y          : { non-fluent, int, default = 10 };                     // max distance in positive and negative y direction
+
         // minerals constants
         MINERAL-AREA(mineral) : { non-fluent, real, default = 0.2 };            // mineral harvesting area (included for rendering purposes)
         MINERAL-VALUE(mineral): { non-fluent, real, default = 1 };              // mineral harvesting value
@@ -37,25 +43,13 @@ domain mars_rover_science_mission {
         pos-y(rover)    : { state-fluent, int, default = 0 };                   // rover y position
         mineral-harvested(mineral) : { state-fluent, bool, default = false };   // if a mineral has been mineral mineral harvested or not
 
-        // interm & derived fluents
-        u-x(rover) : { interm-fluent, int };                                    // displacement in x direction
-        u-y(rover) : { interm-fluent, int };                                    // displacement in y direction
-
         // actions
-        move-x(rover)      : { action-fluent, bool, default = true };           // true = 1 square right, false = 1 square left
-        move-y(rover)      : { action-fluent, bool, default = true };           // true = 1 square up, false = 1 square down
+        move-x(rover)      : { action-fluent, int, default = 0 };               // force input in x direction
+        move-y(rover)      : { action-fluent, int, default = 0 };               // force input in y direction
         harvest(rover)     : { action-fluent, bool, default = false };          // mineral harvesting action
     };
 
     cpfs {
-
-        u-x(?d) = if( move-x(?d) = true )
-                    then 1
-                    else -1;
-
-        u-y(?d) = if( move-y(?d) = true )
-                    then 1
-                    else -1;
 
         pos-x'(?d) = pos-x(?d) + move-x(?d);
         pos-y'(?d) = pos-y(?d) + move-y(?d);
@@ -67,11 +61,40 @@ domain mars_rover_science_mission {
     };
 
     // R = -sum u-x^2 + u-y^2 + sum minerals harvested - sum harvest actions
-    reward = [-sum_{?d : rover} [ 0.001*pow[move-x(?d), 2] + 0.001*pow[move-y(?d), 2]]] +
+    reward = [-sum_{?d : rover} [ move-x(?d) + move-y(?d)]] +
              [sum_{?m : mineral }[if (exists_{?d : rover}
                         [pos-x(?d) == MINERAL-POS-X(?m) ^ pos-y(?d) == MINERAL-POS-Y(?m)
 						 ^ harvest(?d) ^ ~mineral-harvested(?m)])
                             then MINERAL-VALUE(?m)
                             else 0.0]]
              - [sum_{?d : rover} [harvest(?d)]];
+
+    state-invariants {
+        forall_{?m : mineral} [MINERAL-POS-X(?m) < MAX-X ];
+        forall_{?m : mineral} [MINERAL-POS-X(?m) > -MAX-X ];
+        forall_{?m : mineral} [MINERAL-POS-Y(?m) < MAX-Y ];
+        forall_{?m : mineral} [MINERAL-POS-Y(?m) > -MAX-Y ];
+
+        forall_{?d : rover} [pos-x(?d) <= MAX-X ];
+        forall_{?d : rover} [pos-x(?d) >= -MAX-X ];
+        forall_{?d : rover} [pos-y(?d) <= MAX-Y ];
+        forall_{?d : rover} [pos-y(?d) >= -MAX-Y ];
+    };
+
+    action-preconditions {
+        forall_{?d : rover} [ move-x(?d) >= -MAX-STEP(?d) ];
+        forall_{?d : rover} [ move-x(?d) <= MAX-STEP(?d) ];
+        forall_{?d : rover} [ move-y(?d) >= -MAX-STEP(?d) ];
+        forall_{?d : rover} [ move-y(?d) <= MAX-STEP(?d) ];
+
+        forall_{?d : rover} [ pos-x(?d) + move-x(?d) >= -MAX-X ];
+        forall_{?d : rover} [ pos-x(?d) + move-x(?d) <= MAX-X ];
+        forall_{?d : rover} [ pos-y(?d) + move-y(?d) >= -MAX-Y ];
+        forall_{?d : rover} [ pos-y(?d) + move-y(?d) <= MAX-Y ];
+    };
+
+    termination {
+        forall_{?m : mineral} [ mineral-harvested(?m) ];
+    };
+    
 }
