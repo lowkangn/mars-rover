@@ -51,8 +51,16 @@ domain mars_rover_science_mission {
 
     cpfs {
 
-        pos-x'(?d) = pos-x(?d) + move-x(?d);
-        pos-y'(?d) = pos-y(?d) + move-y(?d);
+        pos-x'(?d) = 
+            if (abs[pos-x(?d) + move-x(?d)] <= MAX-X) 
+                then pos-x(?d) + move-x(?d) 
+            else 
+                pos-x(?d);
+        pos-y'(?d) = 
+            if (abs[pos-y(?d) + move-y(?d)] <= MAX-Y) 
+                then pos-y(?d) + move-y(?d) 
+            else 
+                pos-y(?d);
 
         mineral-harvested'(?m) = mineral-harvested(?m) |
                 ~mineral-harvested(?m) ^ [exists_{?d : rover}
@@ -61,8 +69,8 @@ domain mars_rover_science_mission {
     };
 
     // R = -sum u-x^2 + u-y^2 + sum minerals harvested - sum harvest actions
-    reward = [-sum_{?d : rover} [ move-x(?d) + move-y(?d)]] +
-             [sum_{?m : mineral }[if (exists_{?d : rover}
+    reward = [-sum_{?d : rover} [abs[move-x(?d)] + abs[move-y(?d)]]] +
+             + [sum_{?m : mineral }[if (exists_{?d : rover}
                         [pos-x(?d) == MINERAL-POS-X(?m) ^ pos-y(?d) == MINERAL-POS-Y(?m)
 						 ^ harvest(?d) ^ ~mineral-harvested(?m)])
                             then MINERAL-VALUE(?m)
@@ -70,15 +78,15 @@ domain mars_rover_science_mission {
              - [sum_{?d : rover} [harvest(?d)]];
 
     state-invariants {
-        forall_{?m : mineral} [MINERAL-POS-X(?m) < MAX-X ];
-        forall_{?m : mineral} [MINERAL-POS-X(?m) > -MAX-X ];
-        forall_{?m : mineral} [MINERAL-POS-Y(?m) < MAX-Y ];
-        forall_{?m : mineral} [MINERAL-POS-Y(?m) > -MAX-Y ];
+        forall_{?m : mineral} [ MINERAL-POS-X(?m) < MAX-X ];
+        forall_{?m : mineral} [ MINERAL-POS-X(?m) > -MAX-X ];
+        forall_{?m : mineral} [ MINERAL-POS-Y(?m) < MAX-Y ];
+        forall_{?m : mineral} [ MINERAL-POS-Y(?m) > -MAX-Y ];
 
-        forall_{?d : rover} [pos-x(?d) <= MAX-X ];
-        forall_{?d : rover} [pos-x(?d) >= -MAX-X ];
-        forall_{?d : rover} [pos-y(?d) <= MAX-Y ];
-        forall_{?d : rover} [pos-y(?d) >= -MAX-Y ];
+        forall_{?d : rover} [ pos-x(?d) <= MAX-X ];
+        forall_{?d : rover} [ pos-x(?d) >= -MAX-X ];
+        forall_{?d : rover} [ pos-y(?d) <= MAX-Y ];
+        forall_{?d : rover} [ pos-y(?d) >= -MAX-Y ];
     };
 
     action-preconditions {
@@ -86,11 +94,6 @@ domain mars_rover_science_mission {
         forall_{?d : rover} [ move-x(?d) <= MAX-STEP(?d) ];
         forall_{?d : rover} [ move-y(?d) >= -MAX-STEP(?d) ];
         forall_{?d : rover} [ move-y(?d) <= MAX-STEP(?d) ];
-
-        forall_{?d : rover} [ pos-x(?d) + move-x(?d) >= -MAX-X ];
-        forall_{?d : rover} [ pos-x(?d) + move-x(?d) <= MAX-X ];
-        forall_{?d : rover} [ pos-y(?d) + move-y(?d) >= -MAX-Y ];
-        forall_{?d : rover} [ pos-y(?d) + move-y(?d) <= MAX-Y ];
     };
 
     termination {
