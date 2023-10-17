@@ -1,8 +1,11 @@
 from gym import Env
 import itertools
 import numpy as np
+import pickle
+from bidict import bidict
 from pyRDDLGym import RDDLEnv
 from pyRDDLGym.Visualizer.MarsRoverViz import MarsRoverVisualizer
+from TransitionModelGenerator import TransitionModelGenerator
 
 """
 Discretized version of Mars Rover enviroment for Level 1.
@@ -26,13 +29,19 @@ class MarsRoverDisc(Env):
         self.y_bound = int(self.base_env.sampler.subs['MAX-Y'])
         self.mineral_count = int(len(self.base_env.sampler.subs['MINERAL-VALUE']))
         self.mineral_pos = list(zip(self.base_env.sampler.subs['MINERAL-POS-X'], self.base_env.sampler.subs['MINERAL-POS-Y']))
+        self.mineral_values = self.base_env.sampler.subs['MINERAL-VALUE']
 
         self.disc_states = self.init_states()
         self.disc_actions = self.init_actions()
 
-        # print(f"The environment extends {self.x_bound} units in the x-direction and {self.y_bound} units in the y-direction from the origin.")
+        try:
+            f = open(f'level 1/instance{instance}.pickle', 'rb')
+            self.Prob = pickle.load(f)
+        except IOError:
+            model = TransitionModelGenerator(self, instance=instance)
+            self.Prob = model.generate_transitions()
 
-        print(self.disc_states)
+        # print(f"The environment extends {self.x_bound} units in the x-direction and {self.y_bound} units in the y-direction from the origin.")
 
     def init_states(self):
         '''
@@ -50,7 +59,7 @@ class MarsRoverDisc(Env):
 
         for i, _v in enumerate(states):
             disc_states[i] = _v
-        return disc_states
+        return bidict(disc_states)
     
     def init_actions(self):
         '''
@@ -63,4 +72,4 @@ class MarsRoverDisc(Env):
             for i in range(_v.n):
                 disc_actions[index] = k + '|' + str(_v.start + i)
                 index += 1
-        return disc_actions
+        return bidict(disc_actions)
