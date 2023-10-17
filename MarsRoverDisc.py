@@ -30,9 +30,9 @@ class MarsRoverDisc(Env):
         self.disc_states = self.init_states()
         self.disc_actions = self.init_actions()
 
-        print(self.disc_actions)
-
         # print(f"The environment extends {self.x_bound} units in the x-direction and {self.y_bound} units in the y-direction from the origin.")
+
+        print(self.disc_states)
 
     def init_states(self):
         '''
@@ -58,8 +58,9 @@ class MarsRoverDisc(Env):
         '''
         disc_actions = {}
         index = 0
+        # each action is represented in the form ACTION_NAME|ACTION_VALUE
         for k, _v in self.action_space.items():
             for i in range(_v.n):
                 disc_actions[index] = k + '|' + str(_v.start + i)
-                index += 1     
+                index += 1
         return disc_actions

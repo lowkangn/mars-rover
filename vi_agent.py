@@ -1,6 +1,6 @@
 from MarsRoverDisc import MarsRoverDisc
 
-myEnv = MarsRoverDisc()
+myEnv = MarsRoverDisc(instance='0')
 
 # agent = RandomAgent(action_space=myEnv.action_space, num_actions=myEnv.numConcurrentActions)
 
