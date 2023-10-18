@@ -16,7 +16,7 @@ class TransitionModelGenerator(object):
         self.mineral_values =  env.mineral_values
 
         # cost functions (modified in accordance to environment)
-        self.move_cost = 1
+        self.move_cost = 0.001
         self.harvest_cost = 1
 
     def generate_transitions(self):

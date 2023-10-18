@@ -73,3 +73,60 @@ class MarsRoverDisc(Env):
                 disc_actions[index] = k + '|' + str(_v.start + i)
                 index += 1
         return bidict(disc_actions)
+    
+    def step(self, action):
+        cont_action = self.disc2action(action)
+        next_state, reward, done, info =  self.base_env.step(cont_action)
+        return self.state2disc(next_state), reward, done, info
+    
+    def reset(self, seed=None):
+        state = self.base_env.reset(seed=seed)
+        return self.state2disc(state)
+    
+    def render(self):
+        self.base_env.render()
+    
+    def disc2action(self, a):
+        '''
+        Converts discrete action into Level 1 Mars Rover environment.
+        Input:
+            - a (int): action
+        Return:
+            - a (definition): action that is compatible with Level 1 Mars Rover environment.
+        '''
+        a_def = self.disc_actions[a]
+        a_desc, value = a_def.split('|')
+        action = { a_desc: int(value) }
+        return action
+
+
+    def disc2state(self, s):
+        '''
+        Converts discrete state into Level 1 Mars Rover environment state.
+        Input:
+            - s (int): action
+        Return:
+            - s (definition): state that is compatible with Level 1 Mars Rover environment.
+        '''
+        s_def = self.disc_states[s]
+        state = {}
+        state['pos-x___d1'] = s_def[0][0]
+        state['pos-y___d1'] = s_def[0][1]
+        for i in range(0, self.mineral_count):
+            state[f'mineral-harvested___m{i + 1}'] = s_def[1][i]
+
+        return state
+
+    def state2disc(self, state):
+        rover_pos_x = state['pos-x___d1']
+        rover_pos_y = state['pos-y___d1']
+        rover_pos = (rover_pos_x, rover_pos_y)
+        mineral_harvest = []
+        for i in range(1, self.mineral_count + 1):
+            mineral_harvest.append(state[f'mineral-harvested___m{i}'])
+        disc_state = (rover_pos, tuple(mineral_harvest))
+
+        if disc_state in self.disc_states.inverse:
+            return self.disc_states.inverse[disc_state]
+
+        return None
