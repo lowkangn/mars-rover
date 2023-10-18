@@ -46,7 +46,7 @@ instance inst_mars_rover_0 {
 	};
 
   	// State-action constraints above are sufficient
-	max-nondef-actions = pos-inf;
+	max-nondef-actions = 1;
 
 	horizon  = 40;
 	discount = 1.0;
