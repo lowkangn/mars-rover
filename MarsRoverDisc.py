@@ -73,6 +73,7 @@ class MarsRoverDisc(Env):
             for i in range(_v.n):
                 disc_actions[index] = k + '|' + str(_v.start + i)
                 index += 1
+        return bidict(disc_actions)
     
     def step(self, action):
         cont_action = self.disc2action(action)

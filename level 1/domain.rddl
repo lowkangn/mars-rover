@@ -76,7 +76,7 @@ domain mars_rover_science_mission {
     };
 
     // R = -sum u-x^2 + u-y^2 + sum minerals harvested - sum harvest actions
-    reward = [-sum_{?d : rover} [abs[move-x(?d)] + abs[move-y(?d)] * COST-COEFF]] +
+    reward = [-sum_{?d : rover} [abs[move-x(?d)] + abs[move-y(?d)]]]* COST-COEFF +
              + [sum_{?m : mineral }[if (exists_{?d : rover}
                         [pos-x(?d) == MINERAL-POS-X(?m) ^ pos-y(?d) == MINERAL-POS-Y(?m)
 						 ^ harvest(?d) ^ ~mineral-harvested(?m)])
