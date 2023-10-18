@@ -1,3 +1,4 @@
+from typing import Optional, Tuple
 from gym import Env
 import itertools
 import numpy as np
@@ -73,3 +74,13 @@ class MarsRoverDisc(Env):
                 disc_actions[index] = k + '|' + str(_v.start + i)
                 index += 1
         return bidict(disc_actions)
+
+"""
+two more functions needed
+"""
+
+    def reset(self, seed = None):
+        return 0
+    
+    def step(self):
+        return 
