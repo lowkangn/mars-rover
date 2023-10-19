@@ -31,33 +31,7 @@ class Agent(object):
 		"""
 		insert solving mechanism here
 		"""
-		u, u_prime, policy_function = np.zeros(len(self.env.disc_states)), np.zeros(len(self.env.disc_states)), np.zeros(len(self.env.disc_states), dtype=int)
-		converged = lambda delta: (delta <= self.theta*(1-self.gamma)/self.gamma)
-		delta = 1000.0
-		count = 0
-
-		def q_val(s_curr, a, u): 
-			temp = self.Prob[s_curr][a]
-			p = temp[0]
-			s_next = temp[1]
-			r = temp[2]
-			return p * (r + self.gamma * u[s_next])
-	
-		while not converged(delta):
-			u = u_prime.copy()
-			delta = 0
-			count += 1
-			for curr_state in range(len(self.env.disc_states)):
-				q = [q_val(curr_state, x, u) for x in range(len(self.env.disc_actions))]
-				q_max = max(q)
-				u_prime[curr_state] = q_max
-				policy_function[curr_state] = q.index(q_max)
-				diff = abs(u_prime[curr_state] - u[curr_state])
-				if delta < diff:
-					delta = diff
-
-		value_policy = u
-		return value_policy, policy_function
+		return
 
 
 def main():
