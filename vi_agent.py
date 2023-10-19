@@ -25,26 +25,23 @@ class ValueIterationAgent(object):
             value_policy (shape - (|S|)): utility value for each state
             policy_function (shape - (|S|), dtype = int64): action policy per state
         '''
-        value_policy = np.random.choice(len(self.env.disc_actions), size=len(self.env.disc_states))
-        policy_function = np.random.choice(len(self.env.disc_actions), size=len(self.env.disc_states))
-
-        # value_policy = [0] * len(self.disc_states)
+        value_policy = [0] * len(self.disc_states)
     
-        # for _ in range(self.max_iterations):
-        #     delta = 0
-        #     for s in self.disc_states:
-        #         v = value_policy[s]
-        #         value_policy[s] = max([self.bellman_update(value_policy, s, a, self.gamma)
-        #                     for a in self.env.disc_actions])          
-        #         delta = max(delta, abs(v - value_policy[s]))
-        #     if delta <= self.theta: 
-        #         break
+        for _ in range(self.max_iterations):
+            delta = 0
+            for s in self.disc_states:
+                v = value_policy[s]
+                value_policy[s] = max([self.bellman_update(value_policy, s, a, self.gamma)
+                            for a in self.disc_actions])          
+                delta = max(delta, abs(v - value_policy[s]))
+            if delta <= self.theta: 
+                break
         
-        # policy_function = [0] * len(self.disc_states)
+        policy_function = [0] * len(self.disc_states)
 
-        # for s in self.disc_states:
-        #     policy_function[s] = np.argmax([self.bellman_update(value_policy, s, a, self.gamma)
-        #                     for a in self.disc_actions])
+        for s in self.disc_states:
+            policy_function[s] = np.argmax([self.bellman_update(value_policy, s, a, self.gamma)
+                            for a in self.disc_actions])
 
         return value_policy, policy_function
     
@@ -75,9 +72,7 @@ def main():
         print(f'reward     = {reward}')
         print(f'total_reward     = {total_reward}')
         state = next_state
-
     env.close()
-    
 
 if __name__ == "__main__":
     main()

@@ -37,7 +37,8 @@ class MarsRoverDisc(Env):
         try:
             f = open(f'level 1/instance{instance}.pickle', 'rb')
             self.Prob = pickle.load(f)
-        except IOError:
+            f.close()
+        except:
             model = TransitionModelGenerator(self, instance=instance)
             self.Prob = model.generate_transitions()
 

@@ -70,5 +70,6 @@ class TransitionModelGenerator(object):
             # save transition model for convenience
             with open(f'level 1/instance{self.instance}.pickle', 'wb') as f:
                 pickle.dump(self.transitions, f)
+                f.close()
 
         return self.transitions
