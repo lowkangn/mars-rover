@@ -1,4 +1,3 @@
-from typing import Optional, Tuple
 from gym import Env
 import itertools
 import numpy as np
