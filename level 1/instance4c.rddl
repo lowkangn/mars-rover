@@ -33,7 +33,7 @@ non-fluents nf_mars_rover_science_mission_4c {
 		MINERAL-POS-Y(m9) = 7;
 		MINERAL-VALUE(m9) = 17.420634437744724;
 		MINERAL-POS-X(m10) = 6;
-		MINERAL-POS-Y(m10) = 6;
+		MINERAL-POS-Y(m10) = 7;
 		MINERAL-VALUE(m10) = 17.352431579962694;
 	};
 }
