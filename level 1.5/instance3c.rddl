@@ -1,0 +1,48 @@
+non-fluents nf_mars_rover_science_mission_3c {
+	domain = mars_rover_science_mission;
+	objects {
+		mineral : {m1, m2, m3, m4, m5, m6, m7};
+		rover : {d1};
+	};
+	non-fluents {
+		MINERAL-POS-X(m1) = -3;
+		MINERAL-POS-Y(m1) = -9;
+		MINERAL-VALUE(m1) = 8.701907471630431;
+		MINERAL-AREA(m1) = 1.887388265299027;
+		MINERAL-POS-X(m2) = 7;
+		MINERAL-POS-Y(m2) = -6;
+		MINERAL-VALUE(m2) = 17.94192376337854;
+		MINERAL-AREA(m2) = 1.2011046919295223;
+		MINERAL-POS-X(m3) = 1;
+		MINERAL-POS-Y(m3) = -2;
+		MINERAL-VALUE(m3) = 14.407062346673566;
+		MINERAL-AREA(m3) = 1.0085832408601552;
+		MINERAL-POS-X(m4) = 0;
+		MINERAL-POS-Y(m4) = -2;
+		MINERAL-VALUE(m4) = 13;
+		MINERAL-AREA(m4) = 1.7164179988045132;
+		MINERAL-POS-X(m5) = 0;
+		MINERAL-POS-Y(m5) = 0;
+		MINERAL-VALUE(m5) = 12.903718901551768;
+		MINERAL-AREA(m5) = 2.754433299174444;
+		MINERAL-POS-X(m6) = 4;
+		MINERAL-POS-Y(m6) = -6;
+		MINERAL-VALUE(m6) = 4.551323836410228;
+		MINERAL-AREA(m6) = 1.964447002328153;
+		MINERAL-POS-X(m7) = -4;
+		MINERAL-POS-Y(m7) = -4;
+		MINERAL-VALUE(m7) = 0.9399034223799907;
+		MINERAL-AREA(m7) = 1.615109076050517;
+	};
+}
+instance inst_mars_rover_science_mission_3c {
+	domain = mars_rover_science_mission;
+	non-fluents = nf_mars_rover_science_mission_3c;
+	init-state {
+		pos-x(d1) = -3;
+		pos-y(d1) = 6;
+	};
+	max-nondef-actions = 1;
+	horizon = 100;
+	discount = 1.0;
+}

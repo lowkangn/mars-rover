@@ -12,8 +12,8 @@ Discretized version of Mars Rover enviroment for Level 1.
 Adapted from https://github.com/tasbolat1/pyRDDLGym/blob/2b60ec7e6406a335fa4c14496f35a216fa50eb3b/pyRDDLGym/Elevator.py
 """
 class MarsRoverDisc(Env):
-    def __init__(self, instance='0'): 
-        self.base_env = RDDLEnv.RDDLEnv(domain="level 1/domain.rddl", instance=f"level 1/instance{instance}.rddl")
+    def __init__(self, level='1', instance='0'): 
+        self.base_env = RDDLEnv.RDDLEnv(domain=f"level {level}/domain.rddl", instance=f"level {level}/instance{instance}.rddl")
         self.numConcurrentActions = self.base_env.numConcurrentActions
         self.horizon = self.base_env.horizon
         self.action_space = self.base_env.action_space
@@ -35,7 +35,7 @@ class MarsRoverDisc(Env):
         self.disc_actions = self.init_actions()
 
         try:
-            f = open(f'level 1/instance{instance}.pickle', 'rb')
+            f = open(f'level {level}/instance{instance}.pickle', 'rb')
             self.Prob = pickle.load(f)
         except IOError:
             model = TransitionModelGenerator(self, instance=instance)

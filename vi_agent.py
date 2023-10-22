@@ -3,6 +3,8 @@ Adapted from agent template given in assignment 2
 '''
 from MarsRoverDisc import MarsRoverDisc
 import numpy as np
+from time import time
+import tracemalloc
 
 class Agent(object):
 	def	__init__(self, env=None, gamma=0.99, theta = 0.00001, max_iterations=10000):
@@ -65,7 +67,7 @@ class Agent(object):
 
 
 def main():
-	myEnv = MarsRoverDisc(instance='0')
+	myEnv = MarsRoverDisc(level='1.5', instance='0')
 	agent = Agent(env = myEnv)
 	agent.initialize()
 	state = myEnv.reset()
@@ -87,4 +89,10 @@ def main():
 	print("episode ended with reward {}".format(total_reward))
 	myEnv.close()
 
+start = time()
+tracemalloc.start()
 main()
+end = time()
+print(end - start)
+print(tracemalloc.get_traced_memory())
+tracemalloc.stop()

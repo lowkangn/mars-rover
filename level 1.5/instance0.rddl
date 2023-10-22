@@ -1,0 +1,55 @@
+////////////////////////////////////////////////////////////////////
+// Simplified version of mars rover mission.  
+// Relaxations:
+// - Single agent
+// - Minerals are point locations
+// - Agent's movement based on displacement and not power
+//
+// The goal here is to harvest as many high-value mineral
+// as possible within the time constraints.
+//
+// The movement model is of a second order integrator in 2d.
+// The states for each rover is the x,y positions and velocities.
+// The actions are acceleration in the x,y axes.
+// A third action for each rover is mineral harvesting when possible.
+//
+////////////////////////////////////////////////////////////////////
+
+non-fluents rover2 {
+    domain = mars_rover_science_mission;
+
+    objects {
+		rover : { d1 };
+		mineral : { m1, m2 };
+	};
+
+	non-fluents {
+        MINERAL-POS-X(m1) = 5;
+		MINERAL-POS-Y(m1) = 5;
+		MINERAL-VALUE(m1) = 8;
+		MINERAL-AREA(m1) = 6;
+		MINERAL-POS-X(m2) = -8;
+		MINERAL-POS-Y(m2) = -8;
+		MINERAL-VALUE(m2) = 5;
+		MINERAL-AREA(m2) = 8;
+	};
+
+}
+
+instance inst_mars_rover_0 {
+
+	domain = mars_rover_science_mission;
+
+	non-fluents = rover2;
+
+	init-state {
+        pos-x(d1) = 0;
+        pos-y(d1) = 0;
+	};
+
+  	// State-action constraints above are sufficient
+	max-nondef-actions = 1;
+
+	horizon  = 40;
+	discount = 1.0;
+}
