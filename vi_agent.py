@@ -1,11 +1,11 @@
 '''
-Adapted from agent template given in assignment 2
+Adapted from agent template given in assignment 2.
 '''
 from MarsRoverDisc import MarsRoverDisc
 import numpy as np
 
 class Agent(object):
-	def	__init__(self, env=None, gamma=0.99, theta = 0.00001, max_iterations=10000):
+	def	__init__(self, env=None, gamma=0.99, theta=0.00001, max_iterations=10000):
 		self.env = env
 		# Set of discrete actions for evaluator environment, shape - (|A|)
 		self.disc_actions = env.disc_actions
@@ -22,46 +22,35 @@ class Agent(object):
 	def initialize(self):
 		self.value_policy, self.policy_function = self.solve()
 
-
 	def step(self, state):
 		action = self.policy_function[int(state)]
 		return action
 
 	def solve(self):
 		"""
-		insert solving mechanism here
+		Insert solving mechanism here.
 		"""
-		u, u_prime, policy_function = np.zeros(len(self.env.disc_states)), np.zeros(len(self.env.disc_states)), np.zeros(len(self.env.disc_states), dtype=int)
-		converged = lambda delta: (delta <= self.theta*(1-self.gamma)/self.gamma)
-		delta = 1000.0
-		count = 0
-
-		def q_val(s_curr,a,u): 
-			temp = self.Prob[s_curr][a]
-			p = temp[0]
-			s_next = temp[1]
-			r = temp[2]
-			return p*(r+self.gamma*u[s_next])
+		value_policy, policy_function = np.zeros(len(self.env.disc_states)), np.zeros(len(self.env.disc_states), dtype=int)
 	
-		while not converged(delta):
-			u = u_prime.copy()
+		for _ in range(self.max_iterations):
 			delta = 0
-			count+=1
-			# print(f"count: {count}")
 			for curr_state in range(len(self.env.disc_states)):
-				q = [q_val(curr_state, x, u) for x in range(len(self.env.disc_actions))]
+				u = value_policy[curr_state]
+				q = [self.bellman_update(curr_state, a, value_policy) for a in self.env.disc_actions]
 				q_max = max(q)
-				u_prime[curr_state] = q_max
-				policy_function[curr_state] = q.index(q_max)
-				diff = abs(u_prime[curr_state]-u[curr_state])
-				if delta < diff:
-					delta = diff
+				delta = max(delta, abs(u - q_max))
 
-		value_policy = u
-		# print(f"end count: {count}")
-		# print(value_policy)
-		# print(policy_function)
+				value_policy[curr_state] = q_max
+				policy_function[curr_state] = q.index(q_max)		
+
+			if delta <= self.theta: # termination
+				break
+
 		return value_policy, policy_function
+	
+	def bellman_update(self, s_curr, a, u):
+			p, s_next, r = self.Prob[s_curr][a]
+			return p * (r + self.gamma * u[s_next])
 
 
 def main():
@@ -72,6 +61,7 @@ def main():
 	total_reward = 0
 
 	for step in range(myEnv.horizon):
+		myEnv.render()
 		action = agent.step(state)
 		next_state, reward, done, info = myEnv.step(action)
 		total_reward += reward

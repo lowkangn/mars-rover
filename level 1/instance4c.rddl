@@ -44,7 +44,7 @@ instance inst_mars_rover_science_mission_4c {
 		pos-x(d1) = -2;
 		pos-y(d1) = -3;
 	};
-	max-nondef-actions = pos-inf;
+	max-nondef-actions = 1;
 	horizon = 100;
 	discount = 1.0;
 }
