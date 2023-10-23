@@ -8,10 +8,20 @@ from pyRDDLGym.Visualizer.MarsRoverViz import MarsRoverVisualizer
 from TransitionModelGenerator import TransitionModelGenerator
 
 """
-Discretized version of Mars Rover enviroment for Level 1.
+Discretized version of Mars Rover enviroment.
 Adapted from https://github.com/tasbolat1/pyRDDLGym/blob/2b60ec7e6406a335fa4c14496f35a216fa50eb3b/pyRDDLGym/Elevator.py
 """
-class MarsRoverDisc(Env):
+
+def MarsRoverDisc(level, instance):
+    """
+    factory 
+    """
+    lvldict = {'1': MarsRoverDisc1, '2': MarsRoverDisc2, '3':MarsRoverDisc3}
+    if level not in lvldict:
+        raise Exception("no such level")
+    return lvldict[level](level, instance)
+
+class MarsRoverDisc1(Env):
     def __init__(self, level='1', instance='0'): 
         self.base_env = RDDLEnv.RDDLEnv(domain=f"level {level}/domain.rddl", instance=f"level {level}/instance{instance}.rddl")
         self.numConcurrentActions = self.base_env.numConcurrentActions
@@ -24,7 +34,7 @@ class MarsRoverDisc(Env):
         self.base_env.set_visualizer(MarsRoverVisualizer)
 
         # global variables
-        self.rover_step_size = int(self.base_env.sampler.subs['MAX-STEP'])
+        self.rover_step_size = int(self.base_env.sampler.subs['MAX-STEP'][0])
         self.x_bound = int(self.base_env.sampler.subs['MAX-X'])
         self.y_bound = int(self.base_env.sampler.subs['MAX-Y'])
         self.mineral_count = int(len(self.base_env.sampler.subs['MINERAL-VALUE']))
@@ -39,7 +49,7 @@ class MarsRoverDisc(Env):
             self.Prob = pickle.load(f)
             f.close()
         except:
-            model = TransitionModelGenerator(self, instance=instance)
+            model = TransitionModelGenerator(self, level=level, instance=instance)
             self.Prob = model.generate_transitions()
 
         # print(f"The environment extends {self.x_bound} units in the x-direction and {self.y_bound} units in the y-direction from the origin.")
@@ -100,7 +110,6 @@ class MarsRoverDisc(Env):
         action = { a_desc: int(value) }
         return action
 
-
     def disc2state(self, s):
         '''
         Converts discrete state into Level 1 Mars Rover environment state.
@@ -131,3 +140,42 @@ class MarsRoverDisc(Env):
             return self.disc_states.inverse[disc_state]
 
         return None
+
+class MarsRoverDisc2(MarsRoverDisc1):
+    def __init__(self, level='2', instance='0'): 
+        # level specific global variables
+        self.base_env = RDDLEnv.RDDLEnv(domain=f"level {level}/domain.rddl", instance=f"level {level}/instance{instance}.rddl")
+        self.mineral_area = self.base_env.sampler.subs['MINERAL-AREA']
+        super().__init__(level, instance)
+
+class MarsRoverDisc3(MarsRoverDisc1):
+    def __init__(self, level='3', instance='0'): 
+        # level specific global variables
+        self.mineral_area = self.base_env.sampler.subs['MINERAL-AREA']
+        super().__init__(level, instance)
+
+    def init_states(self):
+        super().init_states()
+    
+    def init_actions(self):
+        super().init_actions()
+    
+    def step(self, action):
+        super().step(action)
+    
+    def reset(self, seed=None):
+        super().reset()
+    
+    def render(self):
+        super().render()
+    
+    def disc2action(self, a):
+        super().disc2action(a)
+
+    def disc2state(self, s):
+        super().disc2state(s)
+
+    def state2disc(self, state):
+        super().state2disc(state)
+
+test = MarsRoverDisc(level='2', instance='0')
