@@ -2,6 +2,7 @@
 Adapted from agent template given in assignment 2
 '''
 from MarsRoverDisc import MarsRoverDisc
+from stable_baselines3 import PPO
 import numpy as np
 
 class Agent(object):
@@ -31,7 +32,14 @@ class Agent(object):
 		"""
 		insert solving mechanism here
 		"""
-		return
+
+		custom_arch = [dict(pi=[256, 256], vf=[256, 256])] # Specify the hidden layer sizes for policy (pi) and value function (vf)
+		model = PPO('MlpPolicy', self.env, policy_kwargs=dict(net_arch=custom_arch), verbose=0, normalize_advantage=True, seed=random.seed(42))
+		
+		value_policy = model.get_value_function()  # Value function
+		policy_function = model.policy  # Policy function
+
+		return value_policy, policy_function
 
 
 def main():
