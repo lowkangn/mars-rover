@@ -89,7 +89,7 @@ class Agent(object):
 		return p * (r + self.gamma * value_policy[s_next])
 
 def main():
-	myEnv = MarsRoverDisc(instance='0')
+	myEnv = MarsRoverDisc(instance='3c')
 	agent = Agent(env = myEnv)
 	agent.initialize()
 	state = myEnv.reset()
