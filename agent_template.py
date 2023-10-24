@@ -33,15 +33,60 @@ class Agent(object):
 		"""
 		insert solving mechanism here
 		"""
-
-		#custom_arch = [dict(pi=[256, 256], vf=[256, 256])] # Specify the hidden layer sizes for policy (pi) and value function (vf)
-		#model = PPO('MlpPolicy', self.env, policy_kwargs=dict(net_arch=custom_arch), verbose=0, normalize_advantage=True, seed=random.seed(42))
-
-		value_policy = model.get_value_function()  # Value function
-		policy_function = model.policy  # Policy function
-
+            
+		num_states = len(self.env.disc_states)
+		num_actions = len(self.env.disc_actions)
+		
+		# Initialize a random policy
+		policy_function = np.random.randint(0, num_actions, size=num_states)
+		
+		for _ in range(self.max_iterations):
+			# Policy Evaluation
+			value_policy = self.policy_evaluation(policy_function)
+			
+			policy_stable = True
+			for curr_state in range(num_states):
+				# Policy Improvement
+				old_action = policy_function[curr_state]
+				new_action = self.policy_improvement(curr_state, value_policy)
+				policy_function[curr_state] = new_action
+				
+				if old_action != new_action:
+					policy_stable = False
+			
+			if policy_stable:
+				break
+		
 		return value_policy, policy_function
+	
+	def policy_evaluation(self, policy):
+		
+		value_policy = np.zeros(len(self.env.disc_states))
+		
+		while True:
+			delta = 0
+			for curr_state in range(len(self.env.disc_states)):
+				u = value_policy[curr_state]
+				a = policy[curr_state]
+				q = self.bellman_update(curr_state, a, value_policy)
+				delta = max(delta, abs(u - q))
+				value_policy[curr_state] = q
+			
+			if delta <= self.theta:  # Termination
+				break
+		
+		return value_policy
 
+	def policy_improvement(self, s_curr, value_policy):
+		# Find the action that maximizes the expected return
+		q_values = [self.bellman_update(s_curr, a, value_policy) for a in self.env.disc_actions]
+		
+		return np.argmax(q_values)
+
+	def bellman_update(self, s_curr, a, value_policy):
+		p, s_next, r = self.Prob[s_curr][a]
+		
+		return p * (r + self.gamma * value_policy[s_next])
 
 def main():
 	myEnv = MarsRoverDisc(instance='0')
