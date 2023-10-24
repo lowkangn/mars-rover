@@ -11,7 +11,7 @@ class Agent(object):
 		self.disc_actions = env.disc_actions
 		# Set of discrete states for evaluator environment, shape - (|S|)
 		self.disc_states = env.disc_states
-		# Set of probabilities for transition function for each action from every states, dicitonary of dist[s] = [s', prob, done, info]
+		# Set of probabilities for transition function for each action from every states, dictionary of dist[s] = [s', prob, done, info]
 		self.Prob = env.Prob
 
 		self.gamma = gamma
