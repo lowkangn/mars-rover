@@ -56,7 +56,7 @@ class Agent(object):
 
 
 def main():
-	myEnv = MarsRoverDiscFactory().get_env(level='2', instance='2c')
+	myEnv = MarsRoverDiscFactory().get_env(level='3', instance='0')
 	myEnv.initialize()
 	agent = Agent(env = myEnv)
 	agent.initialize()

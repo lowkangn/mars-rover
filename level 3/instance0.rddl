@@ -15,7 +15,7 @@ non-fluents rover2 {
     domain = mars_rover_science_mission;
 
     objects {
-		rover : { d1, d2 };
+		rover : { d1 };
 		mineral : { m1, m2 };
 	};
 
@@ -43,11 +43,6 @@ instance inst_mars_rover_0 {
         vel-y(d1) = 1;
         pos-x(d1) = 0;
         pos-y(d1) = 0;
-
-		vel-x(d2) = 2;
-        vel-y(d2) = 2;
-        pos-x(d2) = 3;
-        pos-y(d2) = 3;
 	};
 
   	// State-action constraints above are sufficient
