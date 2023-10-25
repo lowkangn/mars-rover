@@ -3,7 +3,7 @@ Adapted from agent template given in assignment 2
 '''
 from MarsRoverDisc import MarsRoverDisc
 import numpy as np
-from time import time
+import time
 import tracemalloc
 from collections import deque
 import matplotlib
@@ -44,7 +44,7 @@ class Agent(object):
 
 		for _ in range(self.max_iterations):
 			delta = 0
-			count+=1
+			# count+=1
 			# print(f"count: {count}")
 			for curr_state in range(len(self.env.disc_states)):
 				q = [q_val(curr_state, x, u) for x in range(len(self.env.disc_actions))]
@@ -70,7 +70,7 @@ class Agent(object):
 			plt.legend()
 			plt.show()
 
-		value_policy = u
+		# value_policy = u
 		# print(f"end count: {count}")
 		# print(value_policy)
 		# print(policy_function)
