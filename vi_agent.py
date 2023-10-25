@@ -60,7 +60,7 @@ class Agent(object):
 		if self.plot == True:
 			iteration_x = range(1, len(delta_values) + 1)
 
-			plt.plot(iteration_x, delta_values, label='Delta values', marker='o') #Plot delta values and line for theta
+			plt.plot(iteration_x, delta_values, label='Delta values') #Plot delta values and line for theta
 			plt.axhline(y=self.theta, color='red', linestyle='--', label='Theta')
 
 			plt.xlabel('Iterations')
