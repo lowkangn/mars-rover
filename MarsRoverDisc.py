@@ -12,17 +12,21 @@ Discretized version of Mars Rover enviroment.
 Adapted from https://github.com/tasbolat1/pyRDDLGym/blob/2b60ec7e6406a335fa4c14496f35a216fa50eb3b/pyRDDLGym/Elevator.py
 """
 
-def MarsRoverDisc(level, instance):
+class MarsRoverDiscFactory():
     """
-    factory 
+    factory
     """
-    lvldict = {'1': MarsRoverDisc1, '2': MarsRoverDisc2, '3':MarsRoverDisc3}
-    if level not in lvldict:
-        raise Exception("no such level")
-    return lvldict[level](level, instance)
+    def __init__(self):
+        self.lvldict = { '1': LevelOneEnv, '2': LevelTwoEnv, '3':LevelThreeEnv }
 
-class MarsRoverDisc1(Env):
-    def __init__(self, level='1', instance='0'): 
+    def get_env(self, level, instance): 
+        if level not in self.lvldict:
+            raise Exception("no such level")
+        return self.lvldict[level](instance)
+
+class MarsRoverDisc(Env):
+    def __init__(self, level='1', instance='0'):
+        self.level, self.instance = level, instance
         self.base_env = RDDLEnv.RDDLEnv(domain=f"level {level}/domain.rddl", instance=f"level {level}/instance{instance}.rddl")
         self.numConcurrentActions = self.base_env.numConcurrentActions
         self.horizon = self.base_env.horizon
@@ -41,18 +45,14 @@ class MarsRoverDisc1(Env):
         self.mineral_pos = list(zip(self.base_env.sampler.subs['MINERAL-POS-X'], self.base_env.sampler.subs['MINERAL-POS-Y']))
         self.mineral_values = self.base_env.sampler.subs['MINERAL-VALUE']
 
+        self.disc_states = {}
+        self.disc_actions = {}
+        self.Prob = {}
+
+    def initialize(self):
         self.disc_states = self.init_states()
         self.disc_actions = self.init_actions()
-
-        try:
-            f = open(f'level {level}/instance{instance}.pickle', 'rb')
-            self.Prob = pickle.load(f)
-            f.close()
-        except:
-            model = TransitionModelGenerator(self, level=level, instance=instance)
-            self.Prob = model.generate_transitions()
-
-        # print(f"The environment extends {self.x_bound} units in the x-direction and {self.y_bound} units in the y-direction from the origin.")
+        self.Prob = self.generate_tm()
 
     def init_states(self):
         '''
@@ -84,6 +84,16 @@ class MarsRoverDisc1(Env):
                 disc_actions[index] = k + '|' + str(_v.start + i)
                 index += 1
         return bidict(disc_actions)
+    
+    def generate_tm(self):
+        try:
+            f = open(f'level {self.level}/instance{self.instance}.pickle', 'rb')
+            tm =  pickle.load(f)
+            f.close()
+            return tm
+        except:
+            model = TransitionModelGenerator(self, level=self.level, instance=self.instance)
+            return model.generate_transitions()
     
     def step(self, action):
         cont_action = self.disc2action(action)
@@ -140,19 +150,22 @@ class MarsRoverDisc1(Env):
             return self.disc_states.inverse[disc_state]
 
         return None
+    
+class LevelOneEnv(MarsRoverDisc):
+    def __init__(self, instance='0'): 
+        super().__init__('1', instance)
 
-class MarsRoverDisc2(MarsRoverDisc1):
-    def __init__(self, level='2', instance='0'): 
+class LevelTwoEnv(MarsRoverDisc):
+    def __init__(self, instance='0'): 
+        super().__init__('2', instance)
         # level specific global variables
-        self.base_env = RDDLEnv.RDDLEnv(domain=f"level {level}/domain.rddl", instance=f"level {level}/instance{instance}.rddl")
-        self.mineral_area = self.base_env.sampler.subs['MINERAL-AREA']
-        super().__init__(level, instance)
+        self.mineral_areas = self.base_env.sampler.subs['MINERAL-AREA']
 
-class MarsRoverDisc3(MarsRoverDisc1):
-    def __init__(self, level='3', instance='0'): 
+class LevelThreeEnv(MarsRoverDisc):
+    def __init__(self, instance='0'):   
+        super().__init__('3', instance)
         # level specific global variables
-        self.mineral_area = self.base_env.sampler.subs['MINERAL-AREA']
-        super().__init__(level, instance)
+        self.mineral_areas = self.base_env.sampler.subs['MINERAL-AREA']
 
     def init_states(self):
         super().init_states()
@@ -177,5 +190,3 @@ class MarsRoverDisc3(MarsRoverDisc1):
 
     def state2disc(self, state):
         super().state2disc(state)
-
-test = MarsRoverDisc(level='2', instance='0')

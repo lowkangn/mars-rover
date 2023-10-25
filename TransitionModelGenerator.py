@@ -92,11 +92,12 @@ class TransitionModelGenerator1(object):
             with open(f'level {self.level}/instance{self.instance}.pickle', 'wb') as f:
                 pickle.dump(self.transitions, f)
                 f.close()
+        return self.transitions
     
 class TransitionModelGenerator2(TransitionModelGenerator1):
-    def __init__(self, env, level='2', instance='0'):
-        self.mineral_area = env.mineral_area
+    def __init__(self, env, level='2', instance='0'):   
         super().__init__(env, level, instance)
+        self.mineral_areas = env.mineral_areas
 
     def harvest(self, s, s_j, rover_pos):
         # harvests all possible minerals at once
@@ -105,7 +106,7 @@ class TransitionModelGenerator2(TransitionModelGenerator1):
         r = -self.harvest_cost
         for i in range(self.mineral_count):
             # location check and not harvested before
-            if s[1][i] == 0 and (rover_pos == self.mineral_pos[i] or within(rover_pos, self.mineral_pos[i], self.mineral_area[i])):
+            if s[1][i] == 0 and (rover_pos == self.mineral_pos[i] or within(rover_pos, self.mineral_pos[i], self.mineral_areas[i])):
                 to_mine.append(i)
         if to_mine:        
             new_m = list(s[1])
