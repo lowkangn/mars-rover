@@ -44,14 +44,14 @@ class MarsRoverDisc(Env):
         self.mineral_count = int(len(self.base_env.sampler.subs['MINERAL-VALUE']))
         self.mineral_pos = list(zip(self.base_env.sampler.subs['MINERAL-POS-X'], self.base_env.sampler.subs['MINERAL-POS-Y']))
         self.mineral_values = self.base_env.sampler.subs['MINERAL-VALUE']
+        self.mineral_areas = self.base_env.sampler.subs['MINERAL-AREA']
 
-        self.disc_states = {}
-        self.disc_actions = {}
+        self.disc_states = bidict({})
+        self.disc_actions = self.init_actions()
         self.Prob = {}
 
     def initialize(self):
         self.disc_states = self.init_states()
-        self.disc_actions = self.init_actions()
         self.Prob = self.generate_tm()
 
     def init_states(self):
@@ -92,7 +92,7 @@ class MarsRoverDisc(Env):
             f.close()
             return tm
         except:
-            model = TransitionModelGenerator(self, level=self.level, instance=self.instance)
+            model = TransitionModelGenerator().get_tm(self)
             return model.generate_transitions()
     
     def step(self, action):
@@ -158,14 +158,10 @@ class LevelOneEnv(MarsRoverDisc):
 class LevelTwoEnv(MarsRoverDisc):
     def __init__(self, instance='0'): 
         super().__init__('2', instance)
-        # level specific global variables
-        self.mineral_areas = self.base_env.sampler.subs['MINERAL-AREA']
 
 class LevelThreeEnv(MarsRoverDisc):
-    def __init__(self, instance='0'):   
+    def __init__(self, instance='0'):
         super().__init__('3', instance)
-        # level specific global variables
-        self.mineral_areas = self.base_env.sampler.subs['MINERAL-AREA']
 
     def init_states(self):
         super().init_states()
