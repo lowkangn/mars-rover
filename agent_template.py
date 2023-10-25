@@ -34,7 +34,7 @@ class Agent(object):
 
 
 def main():
-	myEnv = MarsRoverDisc(instance='0')
+	myEnv = MarsRoverDisc(level='1', instance='0')
 	agent = Agent(env = myEnv)
 	agent.initialize()
 	state = myEnv.reset()
