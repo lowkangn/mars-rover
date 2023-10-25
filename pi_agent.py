@@ -1,7 +1,7 @@
 '''
 Adapted from agent template given in assignment 2
 '''
-from MarsRoverDisc import MarsRoverDisc
+from MarsRoverDisc import MarsRoverDiscFactory
 import random
 import numpy as np
 import time
@@ -93,13 +93,15 @@ def main():
 	level = '1'
 	instance = '1c'
 
-	myEnv = MarsRoverDisc(level, instance)
+	myEnv = MarsRoverDiscFactory().get_env(level, instance)
+	myEnv.initialize()
 	agent = Agent(env = myEnv)
 	agent.initialize()
 	state = myEnv.reset()
 	total_reward = 0
 
 	for step in range(myEnv.horizon):
+		myEnv.render()
 		action = agent.step(state)
 		next_state, reward, done, info = myEnv.step(action)
 		total_reward += reward

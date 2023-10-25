@@ -1,7 +1,7 @@
 '''
 Adapted from agent template given in assignment 2
 '''
-from MarsRoverDisc import MarsRoverDisc
+from MarsRoverDisc import MarsRoverDiscFactory
 import numpy as np
 import time
 import tracemalloc
@@ -81,7 +81,8 @@ def main():
 	level = '1'
 	instance = '1c'
 
-	myEnv = MarsRoverDisc(level, instance)
+	myEnv = MarsRoverDiscFactory().get_env(level, instance)
+	myEnv.initialize()
 	agent = Agent(env = myEnv, plot = True)
 	agent.initialize()
 	state = myEnv.reset()
