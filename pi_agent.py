@@ -2,7 +2,6 @@
 Adapted from agent template given in assignment 2
 '''
 from MarsRoverDisc import MarsRoverDisc
-from stable_baselines3 import SAC, PPO
 import random
 import numpy as np
 import time

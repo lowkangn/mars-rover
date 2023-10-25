@@ -82,7 +82,6 @@ def main():
 	level = '1'
 	instance = '1c'
 
-
 	myEnv = MarsRoverDisc(level, instance)
 	agent = Agent(env = myEnv, plot = True)
 	agent.initialize()
