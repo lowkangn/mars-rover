@@ -105,11 +105,11 @@ class LevelOneGenerator(TransitionModelGenerator):
     def action_generator(self, a, s, s_j, value):
         # all possible actions
         if a.startswith('move-x'): # x-movement
-            s_j, r = self.movex(s, s_j, rover_pos, value)
+            s_j, r = self.movex(s, s_j, value)
         elif a.startswith('move-y'): # y-movement
-            s_j, r = self.movey(s, s_j, rover_pos, value)
+            s_j, r = self.movey(s, s_j, value)
         elif a.startswith('harvest'): # harvest
-            s_j, r = self.harvest(s, s_j, rover_pos)
+            s_j, r = self.harvest(s, s_j)
         else:
             raise Exception('Unknown action encountered!')
         return s_j, r
