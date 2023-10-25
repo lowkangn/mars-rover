@@ -79,7 +79,7 @@ class Agent(object):
 
 def main():
 	t1 = time.time()
-	level = '2'
+	level = '1'
 	instance = '1c'
 
 
