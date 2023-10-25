@@ -44,10 +44,9 @@ class Agent(object):
 
 		for _ in range(self.max_iterations):
 			delta = 0
-			# count+=1
-			# print(f"count: {count}")
 			for curr_state in range(len(self.env.disc_states)):
-				q = [q_val(curr_state, x, u) for x in range(len(self.env.disc_actions))]
+				u = value_policy[curr_state]
+				q = [self.bellman_update(curr_state, a, value_policy) for a in self.env.disc_actions]
 				q_max = max(q)
 				delta = max(delta, abs(u - q_max))
 				delta_values.append(delta)
@@ -70,11 +69,11 @@ class Agent(object):
 			plt.legend()
 			plt.show()
 
-		# value_policy = u
-		# print(f"end count: {count}")
-		# print(value_policy)
-		# print(policy_function)
 		return value_policy, policy_function
+	
+	def bellman_update(self, s_curr, a, u):
+		p, s_next, r = self.Prob[s_curr][a]
+		return p * (r + self.gamma * u[s_next])
 
 
 def main():
@@ -111,4 +110,10 @@ def main():
 
 	myEnv.close()
 
+start = time.time()
+tracemalloc.start()
 main()
+end = time.time()
+print("Runtime is", end - start)
+print("Memory used is", tracemalloc.get_traced_memory())
+tracemalloc.stop()
