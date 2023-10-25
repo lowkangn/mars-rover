@@ -3,9 +3,22 @@ Adapted from agent template given in assignment 2
 '''
 from MarsRoverDisc import MarsRoverDisc
 import numpy as np
+<<<<<<< Updated upstream
 
 class Agent(object):
 	def	__init__(self, env=None, gamma=0.99, theta = 0.00001, max_iterations=10000):
+=======
+from time import time
+import tracemalloc
+from collections import deque
+import matplotlib
+matplotlib.use('TkAgg')  # Use the TkAgg backend (or another backend of your choice)
+import matplotlib.pyplot as plt
+
+
+class Agent(object):
+	def	__init__(self, env=None, gamma=0.99, theta=0.00001, max_iterations=10000, plot=False):
+>>>>>>> Stashed changes
 		self.env = env
 		# Set of discrete actions for evaluator environment, shape - (|A|)
 		self.disc_actions = env.disc_actions
@@ -17,6 +30,7 @@ class Agent(object):
 		self.gamma = gamma
 		self.theta = theta
 		self.max_iterations = max_iterations
+		self.plot = plot
 		self.value_policy, self.policy_function = None, None
 
 	def initialize(self):
@@ -31,6 +45,7 @@ class Agent(object):
 		"""
 		insert solving mechanism here
 		"""
+<<<<<<< Updated upstream
 		u, u_prime, policy_function = np.zeros(len(self.env.disc_states)), np.zeros(len(self.env.disc_states)), np.zeros(len(self.env.disc_states), dtype=int)
 		converged = lambda delta: (delta <= self.theta*(1-self.gamma)/self.gamma)
 		delta = 1000.0
@@ -45,17 +60,46 @@ class Agent(object):
 	
 		while not converged(delta):
 			u = u_prime.copy()
+=======
+		value_policy, policy_function = np.zeros(len(self.env.disc_states)), np.zeros(len(self.env.disc_states), dtype=int)
+		delta_values = deque()	
+
+		for _ in range(self.max_iterations):
+>>>>>>> Stashed changes
 			delta = 0
 			count+=1
 			# print(f"count: {count}")
 			for curr_state in range(len(self.env.disc_states)):
 				q = [q_val(curr_state, x, u) for x in range(len(self.env.disc_actions))]
 				q_max = max(q)
+<<<<<<< Updated upstream
 				u_prime[curr_state] = q_max
 				policy_function[curr_state] = q.index(q_max)
 				diff = abs(u_prime[curr_state]-u[curr_state])
 				if delta < diff:
 					delta = diff
+=======
+				delta = max(delta, abs(u - q_max))
+				delta_values.append(delta)
+
+				value_policy[curr_state] = q_max
+				policy_function[curr_state] = q.index(q_max)		
+
+			if delta <= self.theta: # termination
+				break
+		
+		if self.plot == True:
+			iteration_x = range(1, len(delta_values) + 1)
+
+			plt.plot(iteration_x, delta_values, label='Delta values', marker='o') #Plot delta values and line for theta
+			plt.axhline(y=self.theta, color='red', linestyle='--', label='Theta')
+
+			plt.xlabel('Iterations')
+			plt.ylabel('Delta')
+			plt.title('Convergence of delta values')
+			plt.legend()
+			plt.show()
+>>>>>>> Stashed changes
 
 		value_policy = u
 		# print(f"end count: {count}")
@@ -65,8 +109,13 @@ class Agent(object):
 
 
 def main():
+<<<<<<< Updated upstream
 	myEnv = MarsRoverDisc(instance='2c')
 	agent = Agent(env = myEnv)
+=======
+	myEnv = MarsRoverDisc(level='2', instance='0')
+	agent = Agent(env = myEnv, plot = True)
+>>>>>>> Stashed changes
 	agent.initialize()
 	state = myEnv.reset()
 	total_reward = 0

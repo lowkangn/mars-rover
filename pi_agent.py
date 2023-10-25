@@ -5,6 +5,10 @@ from MarsRoverDisc import MarsRoverDisc
 from stable_baselines3 import SAC, PPO
 import random
 import numpy as np
+<<<<<<< Updated upstream
+=======
+import time
+>>>>>>> Stashed changes
 
 class Agent(object):
 	def	__init__(self, env=None, gamma=0.99, theta = 0.00001, max_iterations=10000):
@@ -89,7 +93,15 @@ class Agent(object):
 		return p * (r + self.gamma * value_policy[s_next])
 
 def main():
+<<<<<<< Updated upstream
 	myEnv = MarsRoverDisc(instance='3c')
+=======
+	t1 = time.time()
+	level = '2'
+	instance = '1c'
+
+	myEnv = MarsRoverDisc(level, instance)
+>>>>>>> Stashed changes
 	agent = Agent(env = myEnv)
 	agent.initialize()
 	state = myEnv.reset()
@@ -108,7 +120,19 @@ def main():
 		state = next_state
 		if done:
 			break
+<<<<<<< Updated upstream
 	print("episode ended with reward {}".format(total_reward))
+=======
+	
+	t2 = time.time()
+	runtime = t2-t1
+
+	print()
+	print("summary of level {}, instance {}".format(level, instance))
+	print("episode ended with reward {}".format(total_reward))
+	print("total runtime is {} seconds".format(runtime))
+
+>>>>>>> Stashed changes
 	myEnv.close()
 
 main()
