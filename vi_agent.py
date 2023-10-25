@@ -3,11 +3,6 @@ Adapted from agent template given in assignment 2
 '''
 from MarsRoverDisc import MarsRoverDisc
 import numpy as np
-<<<<<<< Updated upstream
-
-class Agent(object):
-	def	__init__(self, env=None, gamma=0.99, theta = 0.00001, max_iterations=10000):
-=======
 from time import time
 import tracemalloc
 from collections import deque
@@ -18,7 +13,6 @@ import matplotlib.pyplot as plt
 
 class Agent(object):
 	def	__init__(self, env=None, gamma=0.99, theta=0.00001, max_iterations=10000, plot=False):
->>>>>>> Stashed changes
 		self.env = env
 		# Set of discrete actions for evaluator environment, shape - (|A|)
 		self.disc_actions = env.disc_actions
@@ -45,40 +39,16 @@ class Agent(object):
 		"""
 		insert solving mechanism here
 		"""
-<<<<<<< Updated upstream
-		u, u_prime, policy_function = np.zeros(len(self.env.disc_states)), np.zeros(len(self.env.disc_states)), np.zeros(len(self.env.disc_states), dtype=int)
-		converged = lambda delta: (delta <= self.theta*(1-self.gamma)/self.gamma)
-		delta = 1000.0
-		count = 0
-
-		def q_val(s_curr,a,u): 
-			temp = self.Prob[s_curr][a]
-			p = temp[0]
-			s_next = temp[1]
-			r = temp[2]
-			return p*(r+self.gamma*u[s_next])
-	
-		while not converged(delta):
-			u = u_prime.copy()
-=======
 		value_policy, policy_function = np.zeros(len(self.env.disc_states)), np.zeros(len(self.env.disc_states), dtype=int)
 		delta_values = deque()	
 
 		for _ in range(self.max_iterations):
->>>>>>> Stashed changes
 			delta = 0
 			count+=1
 			# print(f"count: {count}")
 			for curr_state in range(len(self.env.disc_states)):
 				q = [q_val(curr_state, x, u) for x in range(len(self.env.disc_actions))]
 				q_max = max(q)
-<<<<<<< Updated upstream
-				u_prime[curr_state] = q_max
-				policy_function[curr_state] = q.index(q_max)
-				diff = abs(u_prime[curr_state]-u[curr_state])
-				if delta < diff:
-					delta = diff
-=======
 				delta = max(delta, abs(u - q_max))
 				delta_values.append(delta)
 
@@ -99,7 +69,6 @@ class Agent(object):
 			plt.title('Convergence of delta values')
 			plt.legend()
 			plt.show()
->>>>>>> Stashed changes
 
 		value_policy = u
 		# print(f"end count: {count}")
@@ -109,13 +78,13 @@ class Agent(object):
 
 
 def main():
-<<<<<<< Updated upstream
-	myEnv = MarsRoverDisc(instance='2c')
-	agent = Agent(env = myEnv)
-=======
-	myEnv = MarsRoverDisc(level='2', instance='0')
+	t1 = time.time()
+	level = '2'
+	instance = '1c'
+
+
+	myEnv = MarsRoverDisc(level, instance)
 	agent = Agent(env = myEnv, plot = True)
->>>>>>> Stashed changes
 	agent.initialize()
 	state = myEnv.reset()
 	total_reward = 0
@@ -133,7 +102,14 @@ def main():
 		state = next_state
 		if done:
 			break
+	t2 = time.time()
+	runtime = t2-t1
+
+	print()
+	print("summary of level {}, instance {}".format(level, instance))
 	print("episode ended with reward {}".format(total_reward))
+	print("total runtime is {} seconds".format(runtime))
+
 	myEnv.close()
 
 main()
