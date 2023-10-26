@@ -25,10 +25,7 @@ domain mars_rover_science_mission {
 
         // rover constants
         MAX-POWER(rover): { non-fluent, int, default = 2 };                    // control norm constraint
-        MAX-VEL(rover): { non-fluent, int, default = 10 };                    // control norm constraint
-        MAX-X          : { non-fluent, int, default = 10 };                    // max distance in positive and negative x direction
-        MAX-Y          : { non-fluent, int, default = 10 };                    // max distance in positive and negative y direction
-
+        MAX-VEL(rover): { non-fluent, int, default = 5 };                    // control norm constraint
 
         // minerals constants
         MINERAL-AREA(mineral) : { non-fluent, int, default = 1 };               // mineral harvesting area
@@ -54,7 +51,7 @@ domain mars_rover_science_mission {
         vel-x'(?d) = 
             if (abs[vel-x(?d) + power-x(?d)] <= MAX-VEL(?d))
                 then vel-x(?d) + power-x(?d)
-            else if ( [vel-x(?d) + power-x(?d)] > MAX-VEL(?d))
+            else if ([vel-x(?d) + power-x(?d)] > MAX-VEL(?d))
                 then MAX-VEL(?d)
             else 
                 -MAX-VEL(?d);
@@ -65,20 +62,8 @@ domain mars_rover_science_mission {
                 then MAX-VEL(?d)
             else 
                 -MAX-VEL(?d);
-        pos-x'(?d) = 
-            if (abs[pos-x(?d) + vel-x(?d)] <= MAX-X)
-                then pos-x(?d) + vel-x(?d)
-            else if ( [pos-x(?d) + vel-x(?d)] > MAX-X)
-                then MAX-X
-            else 
-                -MAX-X;
-        pos-y'(?d) = 
-            if (abs[pos-y(?d) + vel-y(?d)] <= MAX-Y)
-                then pos-y(?d) + vel-y(?d)
-            else if ( [pos-y(?d) + vel-y(?d)] > MAX-Y)
-                then MAX-Y
-            else 
-                -MAX-Y;
+        pos-x'(?d) = pos-x(?d) + vel-x(?d);
+        pos-y'(?d) = pos-y(?d) + vel-y(?d);
 
         mineral-harvested'(?m) = mineral-harvested(?m) |
                 ~mineral-harvested(?m) ^ [exists_{?d : rover}
@@ -105,16 +90,6 @@ domain mars_rover_science_mission {
         forall_{?d : rover} [ power-y(?d) >= -MAX-POWER(?d) ];
         forall_{?d : rover} [ power-y(?d) <= MAX-POWER(?d) ];
         forall_{?d : rover} [ power-x(?d) + power-y(?d) <= MAX-POWER(?d) ];
-
-        forall_{?m : mineral} [ MINERAL-POS-X(?m) < MAX-X ];
-        forall_{?m : mineral} [ MINERAL-POS-X(?m) > -MAX-X ];
-        forall_{?m : mineral} [ MINERAL-POS-Y(?m) < MAX-Y ];
-        forall_{?m : mineral} [ MINERAL-POS-Y(?m) > -MAX-Y ];
-
-        forall_{?d : rover} [ pos-x(?d) <= MAX-X ];
-        forall_{?d : rover} [ pos-x(?d) >= -MAX-X ];
-        forall_{?d : rover} [ pos-y(?d) <= MAX-Y ];
-        forall_{?d : rover} [ pos-y(?d) >= -MAX-Y ];
     };
 
     termination {

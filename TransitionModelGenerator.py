@@ -26,7 +26,6 @@ class TransitionModel(object):
         self.mineral_count = env.mineral_count
         self.mineral_pos = env.mineral_pos
         self.mineral_values = env.mineral_values
-        self.mineral_areas = env.mineral_areas
 
         # cost functions (modified in accordance to environment)
         self.HARVEST_COST = 1
@@ -104,27 +103,14 @@ class DisplacementTransitionModel(TransitionModel):
         else:
             raise Exception('Unknown action encountered!')
         return s_, r
-
-class LevelOneTransitionModel(DisplacementTransitionModel):
+    
+"""
+For levels 2 and 3, where the minerals have a harvestable radius.
+"""
+class MineralRadiusTransitionModel(TransitionModel):
     def __init__(self, env):
         super().__init__(env)
-    
-    def harvest(self, s):
-        rover_pos = s[0]
-        m_i = self.mineral_pos.index(rover_pos) if rover_pos in self.mineral_pos else -1
-
-        if m_i >= 0 and s[1][m_i] == 0: # if rover is on mineral and mineral has not been harvested
-            new_m = list(s[1])
-            new_m[m_i] = 1
-            new_m = tuple(new_m)
-            s_ = (s[0], new_m)
-            return s_, self.mineral_values[m_i] - self.HARVEST_COST
-        else:
-            return s, -self.HARVEST_COST
-    
-class LevelTwoTransitionModel(DisplacementTransitionModel):
-    def __init__(self, env):   
-        super().__init__(env)
+        self.mineral_areas = env.mineral_areas
 
     def harvest(self, s):
         # harvests all possible minerals at once
@@ -142,67 +128,77 @@ class LevelTwoTransitionModel(DisplacementTransitionModel):
                 new_m[m_i] = 1
                 r += self.mineral_values[m_i]
             new_m = tuple(new_m)
-            s_ = (s[0], new_m)
+            s_ = self.state_after_harvest(s, new_m)
         return s_, r
+    
+    def state_after_harvest(self, s, new_m):
+        pass
 
-class LevelThreeTransitionModel(TransitionModel):
-    def __init__(self, env, level='3', instance='0'):
-        super().__init__(env, level, instance)
-        self.mineral_areas = env.mineral_areas
+class LevelOneTransitionModel(DisplacementTransitionModel):
+    def __init__(self, env):
+        super().__init__(env)
+    
+    def harvest(self, s):
+        rover_pos = s[0]
+        s_, r = s, -self.HARVEST_COST
+        m_i = self.mineral_pos.index(rover_pos) if rover_pos in self.mineral_pos else -1
+
+        if m_i >= 0 and s[1][m_i] == 0: # if rover is on mineral and mineral has not been harvested
+            new_m = list(s[1])
+            new_m[m_i] = 1
+            new_m = tuple(new_m)
+            s_ = (s[0], new_m)
+            r += self.mineral_values[m_i]
+        return s_, r
+    
+class LevelTwoTransitionModel(DisplacementTransitionModel, MineralRadiusTransitionModel):
+    def __init__(self, env):   
+        super().__init__(env)
+
+    def state_after_harvest(self, s, new_m):
+        return s[0], new_m
+
+class LevelThreeTransitionModel(MineralRadiusTransitionModel):
+    def __init__(self, env):
+        super().__init__(env)
         self.rover_max_power = env.rover_max_power
         self.rover_max_vel = env.rover_max_vel
 
         # cost functions (modified in accordance to environment)
         self.POWER_COST = 0.1
     
-    def power_x(self, s, s_j, value):
-        rover_pos = s[0]
-        rover_vel = s[1]
-        r = 0
+    def power_x(self, s, value):
+        rover_pos, rover_vel = s[0], s[1]
+        s_, r = s, 0
         new_vx = rover_vel[0] + int(value)
         new_x = rover_pos[0] + new_vx
         if abs(new_vx) <= self.rover_max_vel and abs(new_x) <= self.x_bound: # rover on edge of world boundary
             s_ = ((new_x, rover_pos[1]), (new_vx, rover_vel[1]), s[2])
-            s_j = self.disc_states[s_]
-            r -= int(value)/self.POWER_COST
-        return s_j, r
+            r -= int(value) / self.POWER_COST
+        return s_, r
     
-    def power_y(self, s, s_j, value):
-        rover_pos = s[0]
-        rover_vel = s[1]
-        r = 0
+    def power_y(self, s, value):
+        rover_pos, rover_vel = s[0], s[1]
+        s_, r = s, 0
         new_vy = rover_vel[1] + int(value)
         new_y = rover_pos[1] + new_vy
         if abs(new_vy) <= self.rover_max_vel and abs(new_y) <= self.y_bound: # rover on edge of world boundary
             s_ = ((rover_pos[0], new_y), (rover_vel[0], new_vy), s[2])
-            s_j = self.disc_states[s_]
-            r -= int(value)/self.POWER_COST
-        return s_j, r
+            r -= int(value) / self.POWER_COST
+        return s_, r
+    
+    def state_after_harvest(self, s, new_m):
+        return s[0], s[1], new_m
 
-    def harvest(self, s, s_j):
-        rover_pos = s[0]
-        r = 0
-        m_i = self.mineral_pos.index(rover_pos) if rover_pos in self.mineral_pos else -1
-        if m_i >= 0 and s[1][m_i] == 0: # if rover is on mineral and mineral has not been harvested
-            new_m = list(s[1])
-            new_m[m_i] = 1
-            new_m = tuple(new_m)
-            s_ = (s[0], s[1], new_m)
-            s_j = self.disc_states[s_]
-            r = self.mineral_values[m_i] - self.HARVEST_COST
-        else:
-            r = -self.HARVEST_COST
-        return s_j, r
-
-    def transition(self, a, s, s_j, value):
+    def transition(self, a, s, value):
         # all possible actions
+        s_ = s
         if a.startswith('power-x'): # x-movement
-            s_j, r = self.power_x(s, s_j, value)
+            s_, r = self.power_x(s, value)
         elif a.startswith('power-y'): # y-movement
-            s_j, r = self.power_y(s, s_j, value)
+            s_, r = self.power_y(s, value)
         elif a.startswith('harvest'): # harvest
-            s_j, r = self.harvest(s, s_j)
+            s_, r = self.harvest(s)
         else:
             raise Exception('Unknown action encountered!')
-        return s_j, r
-
+        return s_, r

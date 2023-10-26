@@ -50,6 +50,7 @@ class MarsRoverDisc(Env):
         self.Prob = {}
 
     def initialize(self):
+        # do not use this for larger instances
         self.disc_states = self.init_states()
         self.Prob = self.generate_tm()
 
@@ -168,6 +169,8 @@ class LevelThreeEnv(MarsRoverDisc):
         # level specific global variables
         self.rover_max_power = int(self.base_env.sampler.subs['MAX-POWER'])
         self.rover_max_vel = int(self.base_env.sampler.subs['MAX-VEL'])
+        self.x_bound = self.horizon * self.rover_max_vel # the max distance the rover can possibly travel in a single direction
+        self.y_bound = self.x_bound
 
         
     def init_states(self):
@@ -177,7 +180,7 @@ class LevelThreeEnv(MarsRoverDisc):
         # each possible position of the rover
         rover_possible_pos = list(itertools.product(np.arange(-self.x_bound, self.x_bound + 1), np.arange(-self.y_bound, self.y_bound + 1)))
 
-        # each possible velocities of the rover
+        # each possible velocity of the rover
         rover_possible_vel = list(itertools.product(np.arange(-self.rover_max_vel, self.rover_max_vel + 1), np.arange(-self.rover_max_vel, self.rover_max_vel + 1)))
 
         # all combinations of each mineral being harvested/not harvested
@@ -193,11 +196,11 @@ class LevelThreeEnv(MarsRoverDisc):
 
     def disc2state(self, s):
         '''
-        Converts discrete state into Level 1 Mars Rover environment state.
+        Converts discrete state into Level 3 Mars Rover environment state.
         Input:
             - s (int): action
         Return:
-            - s (definition): state that is compatible with Level 1 Mars Rover environment.
+            - s (definition): state that is compatible with Level 3 Mars Rover environment.
         '''
         s_def = self.disc_states[s]
         state = {}
