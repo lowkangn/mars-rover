@@ -3,7 +3,7 @@ from pyRDDLGym.Visualizer.MarsRoverViz import MarsRoverVisualizer
 from pyRDDLGym.Core.Policies.Agents import RandomAgent
 
 # set up the environment class, choose instance 0 because every example has at least one example instance
-myEnv = RDDLEnv.RDDLEnv(domain="level 1/domain.rddl", instance="level 1/instance0.rddl")
+myEnv = RDDLEnv.RDDLEnv(domain="level 3/domain.rddl", instance="level 3/instance0.rddl")
 # set up the environment visualizer
 myEnv.set_visualizer(MarsRoverVisualizer)
 
