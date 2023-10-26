@@ -45,7 +45,7 @@ class MarsRoverDisc(Env):
         self.mineral_values = self.base_env.sampler.subs['MINERAL-VALUE']
         self.mineral_areas = self.base_env.sampler.subs['MINERAL-AREA']
 
-        self.disc_states = bidict({})
+        self.disc_states = {}
         self.disc_actions = self.init_actions()
         self.Prob = {}
 
@@ -86,10 +86,10 @@ class MarsRoverDisc(Env):
     
     def generate_tm(self):
         try:
-            f = open(f'level {self.level}/instance{self.instance}.pickle', 'rb')
-            tm =  pickle.load(f)
-            f.close()
-            return tm
+            with open(f'level {self.level}/instance{self.instance}.pickle', 'rb') as f:
+                tm =  pickle.load(f)
+                f.close()
+                return tm
         except:
             model = TransitionModelGenerator().get_tm(self)
             return model.generate_transitions()

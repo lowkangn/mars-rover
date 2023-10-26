@@ -54,7 +54,6 @@ class Agent(object):
 			p, s_next, r = self.Prob[s_curr][a]
 			return p * (r + self.gamma * u[s_next])
 
-
 def main():
 	myEnv = MarsRoverDiscFactory().get_env(level='1', instance='0')
 	myEnv.initialize()
