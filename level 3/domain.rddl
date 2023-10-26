@@ -47,21 +47,8 @@ domain mars_rover_science_mission {
     };
 
     cpfs {
-
-        vel-x'(?d) = 
-            if (abs[vel-x(?d) + power-x(?d)] <= MAX-VEL(?d))
-                then vel-x(?d) + power-x(?d)
-            else if ([vel-x(?d) + power-x(?d)] > MAX-VEL(?d))
-                then MAX-VEL(?d)
-            else 
-                -MAX-VEL(?d);
-        vel-y'(?d) = 
-            if (abs[vel-y(?d) + power-y(?d)] <= MAX-VEL(?d))
-                then vel-y(?d) + power-y(?d)
-            else if ( [vel-y(?d) + power-y(?d)] > MAX-VEL(?d))
-                then MAX-VEL(?d)
-            else 
-                -MAX-VEL(?d);
+        vel-x'(?d) = max[-MAX-VEL(?d), min[vel-x(?d) + power-x(?d), MAX-VEL(?d)]];
+        vel-y'(?d) = max[-MAX-VEL(?d), min[vel-y(?d) + power-y(?d), MAX-VEL(?d)]];
         pos-x'(?d) = pos-x(?d) + vel-x(?d);
         pos-y'(?d) = pos-y(?d) + vel-y(?d);
 

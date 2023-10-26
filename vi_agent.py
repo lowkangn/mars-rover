@@ -55,7 +55,7 @@ class Agent(object):
 			return p * (r + self.gamma * u[s_next])
 
 def main():
-	myEnv = MarsRoverDiscFactory().get_env(level='1', instance='0')
+	myEnv = MarsRoverDiscFactory().get_env(level='3', instance='0')
 	myEnv.initialize()
 	agent = Agent(env = myEnv)
 	agent.initialize()

@@ -23,6 +23,8 @@ class TransitionModel(object):
         self.disc_actions = env.disc_actions
         self.transitions = {}
         
+        self.x_bound = env.x_bound
+        self.y_bound = env.y_bound
         self.mineral_count = env.mineral_count
         self.mineral_pos = env.mineral_pos
         self.mineral_values = env.mineral_values
@@ -45,9 +47,8 @@ class TransitionModel(object):
                 p = 1.0 # probability is 1.0 as results of actions are deterministic
                 s_j = s_i # index of next state
 
-                if int(value) != 0: # if value is 0, then the rover is doing nothing
-                    s_, r = self.transition(action, s, value)
-                    s_j = self.disc_states[s_]
+                s_, r = self.transition(action, s, value)
+                s_j = self.disc_states[s_]
 
                 transitions_from_s[a_i] = p, s_j, r
             self.transitions[s_i] = transitions_from_s
@@ -67,8 +68,6 @@ For levels 1 and 2, where the rover's movement is based on displacement.
 class DisplacementTransitionModel(TransitionModel):
     def __init__(self, env):
         super().__init__(env)
-        self.x_bound = env.x_bound
-        self.y_bound = env.y_bound
 
         # cost functions (modified in accordance to environment)
         self.MOVE_COST = 0.001
@@ -92,8 +91,10 @@ class DisplacementTransitionModel(TransitionModel):
         return s_, r
     
     def transition(self, a, s, value):
+        s_, r = s, 0
+        if int(value) == 0: # if value is 0, then the rover is doing nothing
+            return s_, r 
         # all possible actions
-        s_ = s
         if a.startswith('move-x'): # x-movement
             s_, r = self.move_x(s, value)
         elif a.startswith('move-y'): # y-movement
@@ -123,15 +124,11 @@ class MineralRadiusTransitionModel(TransitionModel):
             if s[1][i] == 0 and (rover_pos == self.mineral_pos[i] or within(self.mineral_pos[i], self.mineral_areas[i])):
                 to_mine.append(i)
         if to_mine:
-            new_m = list(s[1])
-            for m_i in to_mine:
-                new_m[m_i] = 1
-                r += self.mineral_values[m_i]
-            new_m = tuple(new_m)
-            s_ = self.state_after_harvest(s, new_m)
+            s_ = self.state_after_harvest(s, to_mine)
+            r += sum(self.mineral_areas[m] for m in to_mine)
         return s_, r
     
-    def state_after_harvest(self, s, new_m):
+    def state_after_harvest(self, s, to_mine):
         pass
 
 class LevelOneTransitionModel(DisplacementTransitionModel):
@@ -155,7 +152,11 @@ class LevelTwoTransitionModel(DisplacementTransitionModel, MineralRadiusTransiti
     def __init__(self, env):   
         super().__init__(env)
 
-    def state_after_harvest(self, s, new_m):
+    def state_after_harvest(self, s, to_mine):
+        new_m = list(s[1])
+        for m_i in to_mine:
+            new_m[m_i] = 1
+        new_m = tuple(new_m)
         return s[0], new_m
 
 class LevelThreeTransitionModel(MineralRadiusTransitionModel):
@@ -170,35 +171,43 @@ class LevelThreeTransitionModel(MineralRadiusTransitionModel):
     def power_x(self, s, value):
         rover_pos, rover_vel = s[0], s[1]
         s_, r = s, 0
-        new_vx = rover_vel[0] + int(value)
-        new_x = rover_pos[0] + new_vx
-        if abs(new_vx) <= self.rover_max_vel and abs(new_x) <= self.x_bound: # rover on edge of world boundary
-            s_ = ((new_x, rover_pos[1]), (new_vx, rover_vel[1]), s[2])
-            r -= int(value) / self.POWER_COST
+        new_vx = max(-self.rover_max_vel, min(self.rover_max_vel, rover_vel[0] + int(value))) # velocity bounded by max vel
+        s_ = (rover_pos, (new_vx, rover_vel[1]), s[2]) # new position will be calculated afterwards
+        r = -int(value) / self.POWER_COST
         return s_, r
     
     def power_y(self, s, value):
         rover_pos, rover_vel = s[0], s[1]
         s_, r = s, 0
-        new_vy = rover_vel[1] + int(value)
-        new_y = rover_pos[1] + new_vy
-        if abs(new_vy) <= self.rover_max_vel and abs(new_y) <= self.y_bound: # rover on edge of world boundary
-            s_ = ((rover_pos[0], new_y), (rover_vel[0], new_vy), s[2])
-            r -= int(value) / self.POWER_COST
+        new_vy = max(-self.rover_max_vel, min(self.rover_max_vel, rover_vel[0] + int(value))) # velocity bounded by max vel
+        s_ = (rover_pos, (rover_vel[0], new_vy), s[2]) # new position will be calculated afterwards
+        r = -int(value) / self.POWER_COST
         return s_, r
     
-    def state_after_harvest(self, s, new_m):
-        return s[0], s[1], new_m
+    def state_after_harvest(self, s, to_mine):
+        new_m = list(s[2])
+        for m_i in to_mine:
+            new_m[m_i] = 1
+        new_m = tuple(new_m)
+        return s[0], s[1], new_m      
 
     def transition(self, a, s, value):
-        # all possible actions
-        s_ = s
+        # all possible actions, when value is 0, state can still change if rover is moving
+        s_, r = s, 0
         if a.startswith('power-x'): # x-movement
             s_, r = self.power_x(s, value)
         elif a.startswith('power-y'): # y-movement
             s_, r = self.power_y(s, value)
         elif a.startswith('harvest'): # harvest
-            s_, r = self.harvest(s)
+            if value != '0':
+                s_, r = self.harvest(s)
         else:
             raise Exception('Unknown action encountered!')
+        s_ = self.state_after_movement(s_) # calculate new position if rover's velocity is non-zero
         return s_, r
+    
+    def state_after_movement(self, s):
+        rover_pos, rover_vel = s[0], s[1]
+        new_x = max(-self.x_bound, min(self.x_bound, rover_pos[0] + rover_vel[0]))
+        new_y = max(-self.y_bound, min(self.y_bound, rover_pos[1] + rover_vel[1]))
+        return (new_x, new_y), rover_vel, s[2]

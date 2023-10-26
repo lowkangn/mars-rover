@@ -38,8 +38,6 @@ class MarsRoverDisc(Env):
         self.base_env.set_visualizer(MarsRoverVisualizer)
 
         # global variables (applicable to all levels)
-        self.x_bound = int(self.base_env.sampler.subs['MAX-X'])
-        self.y_bound = int(self.base_env.sampler.subs['MAX-Y'])
         self.mineral_count = int(len(self.base_env.sampler.subs['MINERAL-VALUE']))
         self.mineral_pos = list(zip(self.base_env.sampler.subs['MINERAL-POS-X'], self.base_env.sampler.subs['MINERAL-POS-Y']))
         self.mineral_values = self.base_env.sampler.subs['MINERAL-VALUE']
@@ -109,11 +107,11 @@ class MarsRoverDisc(Env):
     
     def disc2action(self, a):
         '''
-        Converts discrete action into Level 1 Mars Rover environment.
+        Converts discrete action into the Mars Rover environment.
         Input:
             - a (int): action
         Return:
-            - a (definition): action that is compatible with Level 1 Mars Rover environment.
+            - a (definition): action that is compatible with the Mars Rover environment.
         '''
         a_def = self.disc_actions[a]
         a_desc, value = a_def.split('|')
@@ -122,12 +120,29 @@ class MarsRoverDisc(Env):
 
     def disc2state(self, s):
         '''
-        Converts discrete state into Level 1 Mars Rover environment state.
+        Converts discrete state into the Mars Rover environment state.
         Input:
             - s (int): action
         Return:
-            - s (definition): state that is compatible with Level 1 Mars Rover environment.
+            - s (definition): state that is compatible with the Mars Rover environment.
         '''
+        pass
+
+    def state2disc(self, state):
+        pass
+
+"""
+For levels 1 and 2, where the rover's movement is based on displacement.
+"""  
+class DispMarsRoverDisc(MarsRoverDisc):
+    def __init__(self, level='1', instance='0'): 
+        super().__init__(level, instance)
+        # level specific global variables
+        self.x_bound = int(self.base_env.sampler.subs['MAX-X'])
+        self.y_bound = int(self.base_env.sampler.subs['MAX-Y'])
+        self.rover_step_size = int(self.base_env.sampler.subs['MAX-STEP'][0])
+
+    def disc2state(self, s):
         s_def = self.disc_states[s]
         state = {}
         state['pos-x___d1'] = s_def[0][0]
@@ -151,17 +166,13 @@ class MarsRoverDisc(Env):
 
         return None
     
-class LevelOneEnv(MarsRoverDisc):
+class LevelOneEnv(DispMarsRoverDisc):
     def __init__(self, instance='0'): 
         super().__init__('1', instance)
-        # level specific global variables
-        self.rover_step_size = int(self.base_env.sampler.subs['MAX-STEP'][0])
 
-class LevelTwoEnv(MarsRoverDisc):
+class LevelTwoEnv(DispMarsRoverDisc):
     def __init__(self, instance='0'): 
         super().__init__('2', instance)
-        # level specific global variables
-        self.rover_step_size = int(self.base_env.sampler.subs['MAX-STEP'][0])
 
 class LevelThreeEnv(MarsRoverDisc):
     def __init__(self, instance='0'):
@@ -195,13 +206,6 @@ class LevelThreeEnv(MarsRoverDisc):
         return bidict(disc_states)
 
     def disc2state(self, s):
-        '''
-        Converts discrete state into Level 3 Mars Rover environment state.
-        Input:
-            - s (int): action
-        Return:
-            - s (definition): state that is compatible with Level 3 Mars Rover environment.
-        '''
         s_def = self.disc_states[s]
         state = {}
         state['vel-x___d1'] = s_def[1][0]
