@@ -43,7 +43,7 @@ class MarsRoverDisc(Env):
         self.mineral_values = self.base_env.sampler.subs['MINERAL-VALUE']
         self.mineral_areas = self.base_env.sampler.subs['MINERAL-AREA']
 
-        self.disc_states = {}
+        self.disc_states = bidict({})
         self.disc_actions = self.init_actions()
         self.Prob = {}
 
@@ -122,13 +122,20 @@ class MarsRoverDisc(Env):
         '''
         Converts discrete state into the Mars Rover environment state.
         Input:
-            - s (int): action
+            - s (int): state
         Return:
             - s (definition): state that is compatible with the Mars Rover environment.
         '''
         pass
 
-    def state2disc(self, state):
+    def state2disc(self, s):
+        '''
+        Converts the Mars Rover environment state into discrete state.
+        Input:
+            - s (defintion): state that is compatible with the Mars Rover environment.
+        Return:
+            - s (definition): state
+        '''
         pass
 
 """
@@ -151,7 +158,7 @@ class DispMarsRoverDisc(MarsRoverDisc):
             state[f'mineral-harvested___m{i + 1}'] = s_def[1][i]
 
         return state
-
+    
     def state2disc(self, state):
         rover_pos_x = state['pos-x___d1']
         rover_pos_y = state['pos-y___d1']
@@ -159,12 +166,14 @@ class DispMarsRoverDisc(MarsRoverDisc):
         mineral_harvest = []
         for i in range(1, self.mineral_count + 1):
             mineral_harvest.append(state[f'mineral-harvested___m{i}'])
-        disc_state = (rover_pos, tuple(mineral_harvest))
+        disc_state = rover_pos, tuple(mineral_harvest)
 
         if disc_state in self.disc_states.inverse:
             return self.disc_states.inverse[disc_state]
-
-        return None
+        else:
+            index = len(self.disc_states)
+            self.disc_states[index] = disc_state
+            return index
     
 class LevelOneEnv(DispMarsRoverDisc):
     def __init__(self, instance='0'): 
@@ -216,7 +225,7 @@ class LevelThreeEnv(MarsRoverDisc):
         for i in range(0, self.mineral_count):
             state[f'mineral-harvested___m{i + 1}'] = s_def[2][i]
         return state
-
+    
     def state2disc(self, state):
         rover_pos_x = state['pos-x___d1']
         rover_pos_y = state['pos-y___d1']
@@ -227,9 +236,12 @@ class LevelThreeEnv(MarsRoverDisc):
         mineral_harvest = []
         for i in range(1, self.mineral_count + 1):
             mineral_harvest.append(state[f'mineral-harvested___m{i}'])
-        disc_state = (rover_pos, rover_vel, tuple(mineral_harvest))
-
+        disc_state = rover_pos, rover_vel, tuple(mineral_harvest)
+    
         if disc_state in self.disc_states.inverse:
             return self.disc_states.inverse[disc_state]
-
-        return None
+        else:
+            index = len(self.disc_states)
+            self.disc_states[index] = disc_state
+            return index
+    
