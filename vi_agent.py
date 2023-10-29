@@ -43,8 +43,8 @@ class Agent(object):
 				delta = max(delta, abs(u - q_max))
 
 				value_policy[curr_state] = q_max
-				policy_function[curr_state] = q.index(q_max)		
-
+				policy_function[curr_state] = q.index(q_max)
+				
 			if delta <= self.theta: # termination
 				break
 
@@ -79,10 +79,12 @@ def main():
 	print("episode ended with reward {}".format(total_reward))
 	myEnv.close()
 
-start = time()
-tracemalloc.start()
-main()
-end = time()
-print(end - start)
-print(tracemalloc.get_traced_memory())
-tracemalloc.stop()
+
+if __name__ == "__main__":
+	start = time()
+	tracemalloc.start()
+	main()
+	end = time()
+	print(f"total time taken: {end - start} (in s)")
+	print(f"memory used (current, peak): {tracemalloc.get_traced_memory()} (in bytes)")
+	tracemalloc.stop()

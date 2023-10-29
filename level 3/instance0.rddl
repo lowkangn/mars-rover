@@ -21,6 +21,7 @@ non-fluents rover2 {
 
 	non-fluents {
 		MAX-VEL(d1) = 1;
+		MAX-POWER(d1) = 1;
 
         MINERAL-POS-X(m1) = 5;
 		MINERAL-POS-Y(m1) = 5;
@@ -50,6 +51,6 @@ instance inst_mars_rover_0 {
   	// State-action constraints above are sufficient
 	max-nondef-actions = 1;
 
-	horizon  = 40;
+	horizon  = 10;
 	discount = 1.0;
 }

@@ -203,6 +203,7 @@ class LevelThreeEnv(MarsRoverDisc):
 
         for i, _v in enumerate(states):
             disc_states[i] = _v
+            
         return bidict(disc_states)
 
     def disc2state(self, s):
