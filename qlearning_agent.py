@@ -4,6 +4,7 @@ Adapted from agent template given in assignment 2.
 from MarsRoverDisc import MarsRoverDisc
 import numpy as np
 import random
+from MarsRoverDisc import MarsRoverDiscFactory
 
 
 class Agent(object):
@@ -79,7 +80,9 @@ class Agent(object):
         return action
 
 def main():
-    myEnv = MarsRoverDisc(instance='0')
+    level = '1'
+    instance = '1c'
+    myEnv = MarsRoverDiscFactory().get_env(level, instance)
     agent = Agent(env=myEnv)
     agent.initialize() #qlearning
     state = myEnv.reset()
