@@ -1,8 +1,10 @@
 '''
 Adapted from agent template given in assignment 2.
 '''
-from MarsRoverDisc import MarsRoverDisc
+from MarsRoverDisc import MarsRoverDiscFactory
 import numpy as np
+from time import time
+import tracemalloc
 
 class Agent(object):
 	def	__init__(self, env=None, gamma=0.99, theta=0.00001, max_iterations=10000):
@@ -11,7 +13,7 @@ class Agent(object):
 		self.disc_actions = env.disc_actions
 		# Set of discrete states for evaluator environment, shape - (|S|)
 		self.disc_states = env.disc_states
-		# Set of probabilities for transition function for each action from every states, dicitonary of dist[s] = [s', prob, done, info]
+		# Set of probabilities for transition function for each action from every states, dictionary of dist[s] = [s', prob, done, info]
 		self.Prob = env.Prob
 
 		self.gamma = gamma
@@ -52,9 +54,9 @@ class Agent(object):
 			p, s_next, r = self.Prob[s_curr][a]
 			return p * (r + self.gamma * u[s_next])
 
-
 def main():
-	myEnv = MarsRoverDisc(instance='0')
+	myEnv = MarsRoverDiscFactory().get_env(level='3', instance='0')
+	myEnv.initialize()
 	agent = Agent(env = myEnv)
 	agent.initialize()
 	state = myEnv.reset()
@@ -77,4 +79,10 @@ def main():
 	print("episode ended with reward {}".format(total_reward))
 	myEnv.close()
 
+start = time()
+tracemalloc.start()
 main()
+end = time()
+print(end - start)
+print(tracemalloc.get_traced_memory())
+tracemalloc.stop()

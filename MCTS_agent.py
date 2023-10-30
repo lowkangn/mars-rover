@@ -4,27 +4,18 @@ Adapted from agent template given in assignment 2.
 from MarsRoverDisc import MarsRoverDisc
 
 class Agent(object):
-	def	__init__(self, env=None, gamma=0.99, theta=0.00001, max_iterations=10000):
+	def	__init__(self, env=None, gamma=0.99, max_iterations=1000):
 		self.env = env
-		# Set of discrete actions for evaluator environment, shape - (|A|)
-		self.disc_actions = env.disc_actions
-		# Set of discrete states for evaluator environment, shape - (|S|)
-		self.disc_states = env.disc_states
-		# Set of probabilities for transition function for each action from every states, dicitonary of dist[s] = [s', prob, done, info]
-		self.Prob = env.Prob
 
 		self.gamma = gamma
-		self.theta = theta
 		self.max_iterations = max_iterations
-		self.value_policy, self.policy_function = None, None
+		self.policy_function = None
 
 	def initialize(self):
-		self.value_policy, self.policy_function = self.solve()
-
+		self.policy_function = self.solve()
 
 	def step(self, state):
-		action = self.policy_function[int(state)]
-		return action
+		return
 
 	def solve(self):
 		"""
@@ -34,7 +25,7 @@ class Agent(object):
 
 
 def main():
-	myEnv = MarsRoverDisc(level='1', instance='0')
+	myEnv = MarsRoverDisc(instance='0')
 	agent = Agent(env = myEnv)
 	agent.initialize()
 	state = myEnv.reset()
