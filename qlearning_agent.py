@@ -23,7 +23,7 @@ class Agent(object):
         self.qtable = None
 
     def initialize(self):
-        qtable = self.qlearning(total_episodes=5000, max_steps=99, epsilon=0.5, learning_rate=0.5)
+        qtable = self.qlearning(total_episodes=1000, max_steps=99, epsilon=0.5, learning_rate=0.5)
         for i in range(len(qtable)):
             print(qtable[i])
 
@@ -83,6 +83,7 @@ def main():
     level = '1'
     instance = '1c'
     myEnv = MarsRoverDiscFactory().get_env(level, instance)
+    myEnv.initialize()
     agent = Agent(env=myEnv)
     agent.initialize() #qlearning
     state = myEnv.reset()
