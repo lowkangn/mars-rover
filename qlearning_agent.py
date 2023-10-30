@@ -1,7 +1,7 @@
 '''
 Adapted from agent template given in assignment 2.
 '''
-from MarsRoverDisc import MarsRoverDisc
+from MarsRoverDisc import MarsRoverDiscFactory
 import numpy as np
 import random
 
@@ -49,6 +49,14 @@ class Agent(object):
                 # call the epsilon greedy policy to obtain the actions
                 # take the action and observe resulting reward and state
                 new_state, reward, done, info = self.env.step(action)
+
+                print()
+                print('step       = {}'.format(step))
+                print('state      = {}'.format(state), self.env.disc_states[state])
+                print('action     = {}'.format(action), self.env.disc_actions[action])
+                print('next state = {}'.format(new_state), self.env.disc_states[new_state])
+                print('reward     = {}'.format(reward))
+
                 # print('self.qtable[state, action] before: ' + str(self.qtable[state, action]))
                 self.qtable[state, action] = self.qtable[state, action] + learning_rate * (
                             reward + gamma * np.max(self.qtable[new_state, :]) - self.qtable[state, action])
@@ -79,7 +87,10 @@ class Agent(object):
         return action
 
 def main():
-    myEnv = MarsRoverDisc(instance='0')
+    level = '1'
+    instance = '2c'
+    myEnv = MarsRoverDiscFactory().get_env(level, instance)
+    myEnv.initialize()
     agent = Agent(env=myEnv)
     agent.initialize() #qlearning
     state = myEnv.reset()
