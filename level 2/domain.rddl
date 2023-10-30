@@ -1,18 +1,24 @@
 ////////////////////////////////////////////////////////////////////
-// A simple continuous MDP for multiagent mars rover science mission.  
+// Simplified version of mars rover mission; level 2  
+// Relaxations:
+// - Single agent
+// - Minerals have a circular area: centre and radius
+// - Agent's movement based on displacement and not power
+// - Problem space is a grid world
 //
-// The goal here is to harvest as many high-value mineral (within their
-// designated radii) as possible within the time constraints.
+// The goal here is to harvest as many high-value mineral
+// as possible within the time constraints.
 //
-// The movement model is of a second order integrator in 2d.
-// The states for each rover is the x,y positions and velocities.
-// The actions are acceleration in the x,y axes.
+// The states for each rover are the x,y positions.
+// The actions are movement in the x,y axes.
 // A third action for each rover is mineral harvesting when possible.
 //
 ////////////////////////////////////////////////////////////////////
 domain mars_rover_science_mission {
 
     requirements = {
+        constrained-state, 
+        integer-valued, 
         reward-deterministic
     };
 
@@ -24,63 +30,81 @@ domain mars_rover_science_mission {
     pvariables {
 
         // rover constants
-        MAX-POWER(rover): { non-fluent, int, default = 2 };                    // control norm constraint
+        MAX-STEP(rover): { non-fluent, int, default = 1 };                     // max distance rover can move in x and y direction for each time step
+        MAX-X          : { non-fluent, int, default = 10 };                    // max distance in positive and negative x direction
+        MAX-Y          : { non-fluent, int, default = 10 };                    // max distance in positive and negative y direction
+        COST-COEFF     : { non-fluent, real, default = 0.001 };
 
         // minerals constants
-        MINERAL-AREA(mineral) : { non-fluent, int, default = 1 };               // mineral harvesting area
+        MINERAL-AREA(mineral) : { non-fluent, real, default = 0.2 };            // mineral harvesting area
         MINERAL-VALUE(mineral): { non-fluent, real, default = 1 };              // mineral harvesting value
         MINERAL-POS-X(mineral): { non-fluent, int, default = 0 };               // mineral x location
         MINERAL-POS-Y(mineral): { non-fluent, int, default = 0 };               // mineral y location
 
         // states
-        vel-x(rover)    : { state-fluent, int, default = 0 };                   // rover x direction velocity
         pos-x(rover)    : { state-fluent, int, default = 0 };                   // rover x position
-        vel-y(rover)    : { state-fluent, int, default = 0 };                   // rover y velocity
         pos-y(rover)    : { state-fluent, int, default = 0 };                   // rover y position
         mineral-harvested(mineral) : { state-fluent, bool, default = false };   // if a mineral has been mineral mineral harvested or not
 
         // actions
-        power-x(rover)      : { action-fluent, int, default = 0 };              // force input in x direction
-        power-y(rover)      : { action-fluent, int, default = 0 };              // force input in y direction
-        harvest(rover)      : { action-fluent, bool, default = false };         // mineral harvesting action
+        move-x(rover)      : { action-fluent, int, default = 0 };               // force input in x direction
+        move-y(rover)      : { action-fluent, int, default = 0 };               // force input in y direction
+        harvest(rover)     : { action-fluent, bool, default = false };          // mineral harvesting action
     };
 
     cpfs {
 
-        vel-x'(?d) = vel-x(?d) + power-x(?d);
-        vel-y'(?d) = vel-y(?d) + power-y(?d);
-        pos-x'(?d) = pos-x(?d) + vel-x(?d);
-        pos-y'(?d) = pos-y(?d) + vel-y(?d);
+        pos-x'(?d) = 
+            if (abs[pos-x(?d) + move-x(?d)] <= MAX-X) 
+                then pos-x(?d) + move-x(?d) 
+            else if (pos-x(?d) < 0)     // If step size is too big, then the rover will be constrained by the world bound
+                then -MAX-X
+            else
+                MAX-X;
+        pos-y'(?d) = 
+            if (abs[pos-y(?d) + move-y(?d)] <= MAX-Y) 
+                then pos-y(?d) + move-y(?d) 
+            else if (pos-y(?d) < 0)     // If step size is too big, then the rover will be constrained by the world bound
+                then -MAX-Y
+            else
+                MAX-Y;
 
         mineral-harvested'(?m) = mineral-harvested(?m) |
                 ~mineral-harvested(?m) ^ [exists_{?d : rover}
-                    [[pow[pos-x(?d) - MINERAL-POS-X(?m), 2] + pow[pos-y(?d) - MINERAL-POS-Y(?m), 2]] < pow[MINERAL-AREA(?m), 2] ^ harvest(?d)]];
+                    [sqrt [ pow[pos-x(?d) - MINERAL-POS-X(?m),2] + pow[pos-y(?d) - MINERAL-POS-Y(?m),2]] < MINERAL-AREA(?m) ^ harvest(?d)]];
 
     };
 
     // R = -sum u-x^2 + u-y^2 + sum minerals harvested - sum harvest actions
-    reward = [-sum_{?d : rover} [[pow[power-x(?d), 2] + pow[power-y(?d), 2]] / 10]] +
+    reward = [-sum_{?d : rover} [abs[move-x(?d)] + abs[move-y(?d)]]]* COST-COEFF +
              [sum_{?m : mineral }[if (exists_{?d : rover}
-                        [[pow[pos-x(?d) - MINERAL-POS-X(?m), 2] + pow[pos-y(?d) - MINERAL-POS-Y(?m), 2]] < pow[MINERAL-AREA(?m), 2] 
+                        [(sqrt[pow[pos-x(?d) - MINERAL-POS-X(?m),2] + pow[pos-y(?d) - MINERAL-POS-Y(?m),2]] < MINERAL-AREA(?m)) 
 						 ^ harvest(?d) ^ ~mineral-harvested(?m)])
                             then MINERAL-VALUE(?m)
                             else 0.0]]
              - [sum_{?d : rover} [harvest(?d)]];
 
     state-invariants {
-        forall_{?m : mineral} [MINERAL-AREA(?m) > 0 ];
+        forall_{?m : mineral} [ MINERAL-POS-X(?m) < MAX-X ];
+        forall_{?m : mineral} [ MINERAL-POS-X(?m) > -MAX-X ];
+        forall_{?m : mineral} [ MINERAL-POS-Y(?m) < MAX-Y ];
+        forall_{?m : mineral} [ MINERAL-POS-Y(?m) > -MAX-Y ];
+
+        forall_{?d : rover} [ pos-x(?d) <= MAX-X ];
+        forall_{?d : rover} [ pos-x(?d) >= -MAX-X ];
+        forall_{?d : rover} [ pos-y(?d) <= MAX-Y ];
+        forall_{?d : rover} [ pos-y(?d) >= -MAX-Y ];
     };
 
     action-preconditions {
-        forall_{?d : rover} [ power-x(?d) >= -MAX-POWER(?d) ];
-        forall_{?d : rover} [ power-x(?d) <= MAX-POWER(?d) ];
-        forall_{?d : rover} [ power-y(?d) >= -MAX-POWER(?d) ];
-        forall_{?d : rover} [ power-y(?d) <= MAX-POWER(?d) ];
-        forall_{?d : rover} [ power-x(?d) + power-y(?d) <= MAX-POWER(?d) ];
+        forall_{?d : rover} [ move-x(?d) >= -MAX-STEP(?d) ];
+        forall_{?d : rover} [ move-x(?d) <= MAX-STEP(?d) ];
+        forall_{?d : rover} [ move-y(?d) >= -MAX-STEP(?d) ];
+        forall_{?d : rover} [ move-y(?d) <= MAX-STEP(?d) ];
     };
 
     termination {
         forall_{?m : mineral} [ mineral-harvested(?m) ];
     };
-
+    
 }

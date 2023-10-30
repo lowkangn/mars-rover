@@ -1,12 +1,8 @@
 ////////////////////////////////////////////////////////////////////
-// Simplified version of mars rover mission.  
-// Relaxations:
-// - Single agent
-// - Minerals are point locations
-// - Agent's movement based on displacement and not power
+// A simple continuous MDP for multiagent mars rover science mission.  
 //
-// The goal here is to harvest as many high-value mineral
-// as possible within the time constraints.
+// The goal here is to harvest as many high-value mineral (within their
+// designated radii) as possible within the time constraints.
 //
 // The movement model is of a second order integrator in 2d.
 // The states for each rover is the x,y positions and velocities.
@@ -24,6 +20,8 @@ non-fluents rover2 {
 	};
 
 	non-fluents {
+		MAX-VEL(d1) = 1;
+
         MINERAL-POS-X(m1) = 5;
 		MINERAL-POS-Y(m1) = 5;
 		MINERAL-VALUE(m1) = 8;
@@ -43,6 +41,8 @@ instance inst_mars_rover_0 {
 	non-fluents = rover2;
 
 	init-state {
+		vel-x(d1) = 1;
+        vel-y(d1) = 1;
         pos-x(d1) = 0;
         pos-y(d1) = 0;
 	};
