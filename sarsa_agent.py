@@ -5,6 +5,7 @@ from MarsRoverDisc import MarsRoverDiscFactory
 import numpy as np
 from time import time
 import tracemalloc
+from matplotlib import pyplot as plt
 
 class Agent(object):
 	def	__init__(self, env=None, gamma=0.99, theta=0.00001, max_iterations=10000):
@@ -20,38 +21,53 @@ class Agent(object):
 		self.theta = theta
 		self.max_iterations = max_iterations
 		self.q_table = None
-		self.policy_function = None
+		self.ep_rewards = []
 
 	def initialize(self):
-		self.q_table, self.policy_function = self.solve()
+		self.q_table = self.solve()
 
 	def step(self, state):
-		action = self.policy_function[int(state)]
+		action = np.argmax(self.q_table[int(state)])
 		return action
 
 	def solve(self):
 		"""
 		Insert solving mechanism here.
 		"""
-		q_table = np.zeros((len(self.disc_states), len(self.disc_actions)))
-		policy_function = np.zeros(len(self.disc_states), dtype=int)
-		lr = 0.5
-		curr_state = 0
-		curr_action = 0
+		def greedy(s, e):
+			a = 0
+			if np.random.uniform(0, 1) < e:
+				action = np.random.randint(0,len(self.disc_actions))
+			else:
+				action = np.argmax(q_table[s])
+			return action
 
-		for _ in range(self.max_iterations):
-			delta = 0
-			p, next_state, r = self.Prob[curr_state][curr_action]
-			next_action = policy_function[next_state]
-			updated_q =  q_table[curr_state][curr_action] + lr * (r + self.gamma*q_table[next_state][next_action] - q_table[curr_state][curr_action])
-			delta = abs(q_table[curr_state][curr_action] - updated_q)
-			q_table[curr_state][curr_action] = updated_q
-			curr_state = next_state
-			curr_action = next_action
-			
-			# if delta <= self.theta: # termination
-			# 	break
-		return q_table, policy_function
+		q_table = np.random.rand(len(self.disc_states), len(self.disc_actions))
+		lr = 0.5
+		decay_rate = 0.005
+		epsilon = 0.5
+
+		for iter in range(self.max_iterations):
+			if epsilon < 0.01 or epsilon > 1: 
+				break
+			done = False
+			ep_reward = 0
+			curr_state = self.env.reset()
+			curr_action = greedy(curr_state, epsilon)
+			print(f"ep{iter} start")
+			while not done:
+				next_state, r, done, info = self.env.step(curr_action)
+				ep_reward += r
+				next_action = greedy(next_state, epsilon)
+				q_table[curr_state][curr_action] = q_table[curr_state][curr_action] + lr * (r + self.gamma*q_table[next_state][next_action] - q_table[curr_state][curr_action])
+				curr_state = next_state
+				curr_action = next_action
+			self.ep_rewards.append(ep_reward)
+			print(f"ep{iter} ended with reward {ep_reward}")
+			epsilon = 0.01 + (1-0.01) * np.exp(-decay_rate * iter)
+
+		print(q_table)
+		return q_table
 	
 
 def main():
@@ -77,6 +93,7 @@ def main():
 		if done:
 			break
 	print("episode ended with reward {}".format(total_reward))
+	plt.plot(range(0,len(agent.ep_rewards)), agent.ep_rewards)
 	myEnv.close()
 
 
