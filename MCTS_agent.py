@@ -9,7 +9,7 @@ import tracemalloc
 class MCTSAgent(object):
 	def	__init__(self, env=None, gamma=0.99, max_iterations=100):
 		self.max_iterations = max_iterations
-		self.mct = MCTGenerator(env)
+		self.mct = MCTGenerator(env, gamma)
 		self.next_step = 0
 		self.horizon = env.horizon
 
@@ -26,19 +26,17 @@ class MCTSAgent(object):
 			for _ in range(self.max_iterations):
 				selected = self.mct.select()
 
-				self.mct.expand(selected)
-
-				selected = selected.select_random()
+				selected = self.mct.expand(selected)
 				self.mct.env.step(selected.action)
 
-				reward = self.mct.simulate()
-				self.mct.update(selected, reward)
+				r = self.mct.simulate()
+				self.mct.update(selected, r)
 
-			self.mct.next_action()
+			print(self.mct.next_action())
 
 
 def main():
-	myEnv = MarsRoverDiscFactory().get_env(level='1', instance='0')
+	myEnv = MarsRoverDiscFactory().get_env(level='2', instance='0')
 	agent = MCTSAgent(env=myEnv)
 	agent.solve()
 	state = myEnv.reset()
