@@ -5,12 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="97137d77-229e-48db-a6c6-21b677ced804" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/mars-rover.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TransitionModelGenerator.py" beforeDir="false" afterPath="$PROJECT_DIR$/TransitionModelGenerator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/level 1/instance2c.pickle" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/qlearning_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/qlearning_agent.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -78,7 +73,7 @@
       <updated>1698214852409</updated>
       <workItem from="1698214853559" duration="22333000" />
       <workItem from="1698654523382" duration="7173000" />
-      <workItem from="1698811433746" duration="3997000" />
+      <workItem from="1698811433746" duration="7949000" />
     </task>
     <servers />
   </component>
@@ -103,6 +98,6 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/mars_rover$qlearning_agent.coverage" NAME="qlearning_agent Coverage Results" MODIFIED="1698815150618" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mars_rover$qlearning_agent.coverage" NAME="qlearning_agent Coverage Results" MODIFIED="1698830005990" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

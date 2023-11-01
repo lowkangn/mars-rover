@@ -8,66 +8,51 @@ from MarsRoverDisc import MarsRoverDiscFactory
 
 
 class Agent(object):
-    def __init__(self, env=None, gamma=0.99, theta=0.0001, max_iterations=10000):
+    def __init__(self, env=None):
         self.env = env
         # Set of discrete actions for evaluator environment, shape - (|A|)
         self.disc_actions = env.disc_actions
         # Set of discrete states for evaluator environment, shape - (|S|)
         self.disc_states = env.disc_states
         # Set of probabilities for transition function for each action from every states, dicitonary of dist[s] = [s', prob, done, info]
-        self.Prob = env.Prob
-
-        self.gamma = gamma
-        self.theta = theta
-        self.max_iterations = max_iterations
+        # self.Prob = env.Prob
         self.qtable = None
 
     def initialize(self):
-        qtable = self.qlearning(total_episodes=1000, max_steps=99, epsilon=0.65, learning_rate=0.7)
+        qtable = self.qlearning(total_episodes=1000, max_steps=99, epsilon=0.6, learning_rate=0.7)
         for i in range(len(qtable)):
             print(qtable[i])
-
 
     def agentsStep(self, state):
         action = np.argmax(self.qtable[state, :])
         return action
 
     def qlearning(self, total_episodes, max_steps, epsilon, learning_rate,
-              max_epsilon = 1.0, min_epsilon = 0.65, decay_rate = 0.005,  gamma=0.99):
+              max_epsilon = 1.0, min_epsilon = 0.6, decay_rate = 0.005,  gamma=0.99):
 
         # initialize Q[S, A] arbitrarily
-        # self.qtable = np.zeros((len(self.disc_states), len(self.disc_actions)))
         self.qtable = np.random.uniform(low =-1,high = 1, size =(len(self.disc_states), len(self.disc_actions)))
-
 
         for episode in range(total_episodes):
             state = self.env.reset()  # Reset the environment to the starting state
             done = False
             total_rewards = 0  # collected reward within an episode
-            if episode % 10 == 0:  # monitor progress
-                 print("\rEpisode {}/{}".format(episode, total_episodes), end='')
 
             for step in range(max_steps):
                 action = self.epsilon_greedy_policy(self.qtable, state, epsilon)
                 # call the epsilon greedy policy to obtain the actions
                 # take the action and observe resulting reward and state
                 new_state, reward, done, info = self.env.step(action)
-                # print('self.qtable[state, action] before: ' + str(self.qtable[state, action]))
                 self.qtable[state, action] = self.qtable[state, action] + learning_rate * (
                             reward + gamma * np.max(self.qtable[new_state, :]) - self.qtable[state, action])
-                # print('self.qtable[state, action] after: ' + str(self.qtable[state, action]))
-                # print(self.qtable[state, action])
-                # print(total_rewards)
-                # print('total_rewards afterwards')
+
                 total_rewards += reward
                 print('total_rewards: {}'.format(total_rewards))
-                print('reward: {}'.format(reward))
-                print('--')
                 state = new_state
                 if done == True:
                     break
-            epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-decay_rate * episode)  # Reduce epsilon value to encourage exploitation and discourage exploration
-            # print(self.qtable)
+            # Reduce epsilon value to encourage exploitation and discourage exploration
+            epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-decay_rate * episode)
 
         return self.qtable
 
