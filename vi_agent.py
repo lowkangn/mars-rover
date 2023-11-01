@@ -78,8 +78,8 @@ class Agent(object):
 
 def main():
 	t1 = time.time()
-	level = '1'
-	instance = '1c'
+	level = '2'
+	instance = '0'
 
 	myEnv = MarsRoverDiscFactory().get_env(level, instance)
 	myEnv.initialize()

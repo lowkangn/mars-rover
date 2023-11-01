@@ -22,7 +22,7 @@ class Agent(object):
         self.qtable = None
 
     def initialize(self):
-        qtable = self.qlearning(total_episodes=1000, max_steps=99, epsilon=0.5, learning_rate=0.5)
+        qtable = self.qlearning(total_episodes=2000, max_steps=99, epsilon=0.5, learning_rate=0.8)
         for i in range(len(qtable)):
             print(qtable[i])
 
@@ -32,10 +32,11 @@ class Agent(object):
         return action
 
     def qlearning(self, total_episodes, max_steps, epsilon, learning_rate,
-              max_epsilon = 1.0, min_epsilon = 0.01, decay_rate = 0.005,  gamma=0.95):
+              max_epsilon = 1.0, min_epsilon = 0.01, decay_rate = 0.005,  gamma=0.99):
 
         # initialize Q[S, A] arbitrarily
-        self.qtable = np.zeros((len(self.disc_states), len(self.disc_actions)))
+        #self.qtable = np.zeros((len(self.disc_states), len(self.disc_actions)))
+        self.qtable = np.random.uniform(low=-1, high=1, size=(len(self.disc_states), len(self.disc_actions)))
 
         for episode in range(total_episodes):
             state = self.env.reset()  # Reset the environment to the starting state
@@ -50,12 +51,12 @@ class Agent(object):
                 # take the action and observe resulting reward and state
                 new_state, reward, done, info = self.env.step(action)
 
-                print()
-                print('step       = {}'.format(step))
-                print('state      = {}'.format(state), self.env.disc_states[state])
-                print('action     = {}'.format(action), self.env.disc_actions[action])
-                print('next state = {}'.format(new_state), self.env.disc_states[new_state])
-                print('reward     = {}'.format(reward))
+                #print()
+                #print('step       = {}'.format(step))
+                #print('state      = {}'.format(state), self.env.disc_states[state])
+                #print('action     = {}'.format(action), self.env.disc_actions[action])
+                #print('next state = {}'.format(new_state), self.env.disc_states[new_state])
+                #print('reward     = {}'.format(reward))
 
                 # print('self.qtable[state, action] before: ' + str(self.qtable[state, action]))
                 self.qtable[state, action] = self.qtable[state, action] + learning_rate * (
@@ -71,6 +72,7 @@ class Agent(object):
                 if done == True:
                     break
             epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-decay_rate * episode)  # Reduce epsilon value to encourage exploitation and discourage exploration
+            print("Total rewards in episode", episode, " is", total_rewards)
             # print(self.qtable)
 
         return self.qtable
@@ -87,8 +89,8 @@ class Agent(object):
         return action
 
 def main():
-    level = '1'
-    instance = '1c'
+    level = '2'
+    instance = '0'
     myEnv = MarsRoverDiscFactory().get_env(level, instance)
     myEnv.initialize()
     agent = Agent(env=myEnv)
