@@ -23,7 +23,7 @@ class Agent(object):
         self.qtable = None
 
     def initialize(self):
-        qtable = self.qlearning(total_episodes=1000, max_steps=99, epsilon=0.5, learning_rate=0.5)
+        qtable = self.qlearning(total_episodes=1000, max_steps=99, epsilon=0.65, learning_rate=0.7)
         for i in range(len(qtable)):
             print(qtable[i])
 
@@ -33,10 +33,12 @@ class Agent(object):
         return action
 
     def qlearning(self, total_episodes, max_steps, epsilon, learning_rate,
-              max_epsilon = 1.0, min_epsilon = 0.01, decay_rate = 0.005,  gamma=0.95):
+              max_epsilon = 1.0, min_epsilon = 0.65, decay_rate = 0.005,  gamma=0.99):
 
         # initialize Q[S, A] arbitrarily
-        self.qtable = np.zeros((len(self.disc_states), len(self.disc_actions)))
+        # self.qtable = np.zeros((len(self.disc_states), len(self.disc_actions)))
+        self.qtable = np.random.uniform(low =-1,high = 1, size =(len(self.disc_states), len(self.disc_actions)))
+
 
         for episode in range(total_episodes):
             state = self.env.reset()  # Reset the environment to the starting state
@@ -58,8 +60,9 @@ class Agent(object):
                 # print(total_rewards)
                 # print('total_rewards afterwards')
                 total_rewards += reward
-                # print(total_rewards)
-                # print('--')
+                print('total_rewards: {}'.format(total_rewards))
+                print('reward: {}'.format(reward))
+                print('--')
                 state = new_state
                 if done == True:
                     break
@@ -81,7 +84,7 @@ class Agent(object):
 
 def main():
     level = '1'
-    instance = '1c'
+    instance = '2c'
     myEnv = MarsRoverDiscFactory().get_env(level, instance)
     myEnv.initialize()
     agent = Agent(env=myEnv)

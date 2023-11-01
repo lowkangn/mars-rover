@@ -22,7 +22,7 @@ class TransitionModel(object):
         self.disc_states = env.disc_states.inverse
         self.disc_actions = env.disc_actions
         self.transitions = {}
-        
+
         self.x_bound = env.x_bound
         self.y_bound = env.y_bound
         self.mineral_count = env.mineral_count
