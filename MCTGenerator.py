@@ -51,13 +51,12 @@ class MCTGenerator(object):
 
     def reset(self):
         self.root = Node(self.action_count, None)
-        for _ in range(self.action_count):
-            self.expand(self.root)
         return self.root
 
     def next_action(self):
         action = max(self.root.children, key=lambda child: child.v).action
         self.steps.append(action)
+        self.reset()
         return action
 
     def select(self):
@@ -79,10 +78,12 @@ class MCTGenerator(object):
 
     def simulate(self):
         r = 0
-        for _ in range(0, self.horizon - len(self.steps)):
+        discount = 1
+        for _ in range(self.horizon - len(self.steps)):
             random_a = random.randrange(self.action_count)
             _, reward, done, _ = self.env.step(random_a)
-            r += reward
+            r += (reward * discount)
+            discount *= self.gamma
             if done:
                 break
         return r

@@ -36,7 +36,7 @@ class MCTSAgent(object):
 
 
 def main():
-	myEnv = MarsRoverDiscFactory().get_env(level='2', instance='0')
+	myEnv = MarsRoverDiscFactory().get_env(level='3', instance='4c')
 	agent = MCTSAgent(env=myEnv)
 	agent.solve()
 	state = myEnv.reset()
