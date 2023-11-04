@@ -1,38 +1,49 @@
 '''
 Adapted from agent template given in assignment 2.
 '''
-from MarsRoverDisc import MarsRoverDisc
+from MarsRoverDisc import MarsRoverDiscFactory
+from MCTGenerator import MCTGenerator
+from time import time
+import tracemalloc
 
-class Agent(object):
-	def	__init__(self, env=None, gamma=0.99, max_iterations=1000):
-		self.env = env
-
-		self.gamma = gamma
+class MCTSAgent(object):
+	def	__init__(self, env=None, gamma=0.99, max_iterations=100):
 		self.max_iterations = max_iterations
-		self.policy_function = None
+		self.mct = MCTGenerator(env, gamma)
+		self.next_step = 0
+		self.horizon = env.horizon
 
-	def initialize(self):
-		self.policy_function = self.solve()
-
-	def step(self, state):
-		return
+	def step(self):
+		action = self.mct.steps[self.next_step]
+		self.next_step += 1
+		return action
 
 	def solve(self):
 		"""
 		Insert solving mechanism here.
 		"""
-		return
+		for _ in range(self.horizon):
+			for _ in range(self.max_iterations):
+				selected = self.mct.select()
+
+				selected = self.mct.expand(selected)
+				self.mct.env.step(selected.action)
+
+				r = self.mct.simulate()
+				self.mct.update(selected, r)
+
+			print(self.mct.next_action())
 
 
 def main():
-	myEnv = MarsRoverDisc(instance='0')
-	agent = Agent(env = myEnv)
-	agent.initialize()
+	myEnv = MarsRoverDiscFactory().get_env(level='3', instance='4c')
+	agent = MCTSAgent(env=myEnv)
+	agent.solve()
 	state = myEnv.reset()
 	total_reward = 0
 
 	for step in range(myEnv.horizon):
-		action = agent.step(state)
+		action = agent.step()
 		next_state, reward, done, info = myEnv.step(action)
 		total_reward += reward
 		print()
@@ -47,4 +58,11 @@ def main():
 	print("episode ended with reward {}".format(total_reward))
 	myEnv.close()
 
-main()
+if __name__ == "__main__":
+	start = time()
+	tracemalloc.start()
+	main()
+	end = time()
+	print(f"total time taken: {end - start} (in s)")
+	print(f"memory used (current, peak): {tracemalloc.get_traced_memory()} (in bytes)")
+	tracemalloc.stop()
