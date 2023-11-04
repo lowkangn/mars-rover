@@ -113,24 +113,6 @@ class MineralRadiusTransitionModel(TransitionModel):
         super().__init__(env)
         self.mineral_areas = env.mineral_areas
 
-    def harvest(self, s):
-        # harvests all possible minerals at once
-        rover_pos = s[0]
-        within = lambda m_pos, r: math.pow(m_pos[0] - rover_pos[0], 2) + math.pow(m_pos[1] - rover_pos[1], 2) <= math.pow(r, 2)
-        to_mine = []
-        s_, r = s, -self.HARVEST_COST
-        for i in range(self.mineral_count):
-            # location check and not harvested before
-            if s[1][i] == 0 and (rover_pos == self.mineral_pos[i] or within(self.mineral_pos[i], self.mineral_areas[i])):
-                to_mine.append(i)
-        if to_mine:
-            s_ = self.state_after_harvest(s, to_mine)
-            r += sum(self.mineral_areas[m] for m in to_mine)
-        return s_, r
-    
-    def state_after_harvest(self, s, to_mine):
-        pass
-
 class LevelOneTransitionModel(DisplacementTransitionModel):
     def __init__(self, env):
         super().__init__(env)
@@ -152,12 +134,24 @@ class LevelTwoTransitionModel(DisplacementTransitionModel, MineralRadiusTransiti
     def __init__(self, env):   
         super().__init__(env)
 
-    def state_after_harvest(self, s, to_mine):
-        new_m = list(s[1])
-        for m_i in to_mine:
-            new_m[m_i] = 1
-        new_m = tuple(new_m)
-        return s[0], new_m
+    def harvest(self, s):
+        # harvests all possible minerals at once
+        rover_pos = s[0]
+        within = lambda m_pos, r: math.pow(m_pos[0] - rover_pos[0], 2) + math.pow(m_pos[1] - rover_pos[1], 2) <= math.pow(r, 2)
+        to_mine = []
+        s_, r = s, -self.HARVEST_COST
+        for i in range(self.mineral_count):
+            # location check and not harvested before
+            if s[1][i] == 0 and (rover_pos == self.mineral_pos[i] or within(self.mineral_pos[i], self.mineral_areas[i])):
+                to_mine.append(i)
+        if to_mine:
+            new_m = list(s[1])
+            for m_i in to_mine:
+                new_m[m_i] = 1
+            new_m = tuple(new_m)
+            s_ = (s[0], new_m)
+            r += sum(self.mineral_areas[m] for m in to_mine)
+        return s_, r
 
 class LevelThreeTransitionModel(MineralRadiusTransitionModel):
     def __init__(self, env):
@@ -173,23 +167,35 @@ class LevelThreeTransitionModel(MineralRadiusTransitionModel):
         s_, r = s, 0
         new_vx = max(-self.rover_max_vel, min(self.rover_max_vel, rover_vel[0] + int(value))) # velocity bounded by max vel
         s_ = (rover_pos, (new_vx, rover_vel[1]), s[2]) # new position will be calculated afterwards
-        r = -int(value) / self.POWER_COST
+        r = -abs(int(value)) * self.POWER_COST
         return s_, r
     
     def power_y(self, s, value):
         rover_pos, rover_vel = s[0], s[1]
         s_, r = s, 0
-        new_vy = max(-self.rover_max_vel, min(self.rover_max_vel, rover_vel[0] + int(value))) # velocity bounded by max vel
+        new_vy = max(-self.rover_max_vel, min(self.rover_max_vel, rover_vel[1] + int(value))) # velocity bounded by max vel
         s_ = (rover_pos, (rover_vel[0], new_vy), s[2]) # new position will be calculated afterwards
-        r = -int(value) / self.POWER_COST
+        r = -abs(int(value)) * self.POWER_COST
         return s_, r
     
-    def state_after_harvest(self, s, to_mine):
-        new_m = list(s[2])
-        for m_i in to_mine:
-            new_m[m_i] = 1
-        new_m = tuple(new_m)
-        return s[0], s[1], new_m      
+    def harvest(self, s):
+        # harvests all possible minerals at once
+        rover_pos = s[0]
+        within = lambda m_pos, r: math.pow(m_pos[0] - rover_pos[0], 2) + math.pow(m_pos[1] - rover_pos[1], 2) <= math.pow(r, 2)
+        to_mine = []
+        s_, r = s, -self.HARVEST_COST
+        for i in range(self.mineral_count):
+            # location check and not harvested before
+            if s[2][i] == 0 and (rover_pos == self.mineral_pos[i] or within(self.mineral_pos[i], self.mineral_areas[i])):
+                to_mine.append(i)
+        if to_mine:
+            new_m = list(s[2])
+            for m_i in to_mine:
+                new_m[m_i] = 1
+            new_m = tuple(new_m)
+            s_ = (s[0], s[1], new_m)
+            r += sum(self.mineral_areas[m] for m in to_mine)
+        return s_, r
 
     def transition(self, a, s, value):
         # all possible actions, when value is 0, state can still change if rover is moving
