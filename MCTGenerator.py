@@ -5,7 +5,7 @@ from numpy import log
 
 class Node(object):
     def __init__(self, action_count, action):
-        self.v = 0 # estimated value
+        self.q = 0 # estimated value
         self.n = 0 # number of visits
         self.c = 2 # exploration parameter
         
@@ -25,7 +25,7 @@ class Node(object):
             if child.n == 0:
                 return child
             else:
-                uct_ = child.v + (self.c * math.sqrt(log(self.n) / child.n)) # UCT formula
+                uct_ = child.q + (self.c * math.sqrt(log(self.n) / child.n)) # UCT formula
                 if uct_ > uct:
                     uct = uct_
                     best = child
@@ -37,9 +37,10 @@ class Node(object):
         node.parent = self
 
 class MCTGenerator(object):
-    def __init__(self, env, gamma):
+    def __init__(self, env, gamma, max_depth):
         self.env = env
         self.gamma = gamma
+        self.max_depth = max_depth
 
         self.action_count = len(env.disc_actions)
         self.root = self.reset()
@@ -54,7 +55,7 @@ class MCTGenerator(object):
         return self.root
 
     def next_action(self):
-        action = max(self.root.children, key=lambda child: child.v).action
+        action = max(self.root.children, key=lambda child: child.q).action
         self.steps.append(action)
         self.reset()
         return action
@@ -65,21 +66,23 @@ class MCTGenerator(object):
             self.env.step(action)
 
         selected = self.root
-        while selected.is_fully_expanded():
+        while selected.is_fully_expanded():  
             best = selected.best_child()
             selected = best
+            self.env.step(selected.action)
         return selected
         
     def expand(self, node):
         a = random.sample(list(node.unexplored), 1)[0]
         child = Node(self.action_count, a)
         node.add_child(child)
-        return child
+        _, r, _, _ = self.env.step(a)
+        return child, r
 
-    def simulate(self):
-        r = 0
+    def simulate(self, initial_r):
+        r = initial_r
         discount = 1
-        for _ in range(self.horizon - len(self.steps)):
+        for _ in range(min(self.max_depth, self.horizon - len(self.steps))):
             random_a = random.randrange(self.action_count)
             _, reward, done, _ = self.env.step(random_a)
             r += (reward * discount)
@@ -89,9 +92,9 @@ class MCTGenerator(object):
         return r
     
     def update(self, node, r): # backpropagation    
-        new_n = node.n + 1
-        node.v = ((node.v * node.n) + (r * new_n)) / (node.n + new_n)
-        node.n = new_n
+        node.n += 1
+        # node.q = ((node.q * node.n) + (r * new_n)) / (node.n + new_n)
+        node.q += r
 
         if node.parent != None:
             self.update(node.parent, r * self.gamma)
