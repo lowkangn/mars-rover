@@ -5,6 +5,9 @@ from MarsRoverDisc import MarsRoverDisc
 import numpy as np
 import random
 from MarsRoverDisc import MarsRoverDiscFactory
+from time import time
+import tracemalloc
+import matplotlib.pyplot as plt
 
 
 class Agent(object):
@@ -19,7 +22,7 @@ class Agent(object):
         self.qtable = None
 
     def initialize(self):
-        qtable = self.qlearning(total_episodes=1000, max_steps=99, epsilon=0.6, learning_rate=0.7)
+        qtable = self.qlearning(total_episodes=1000, max_steps=99, epsilon=0.6, learning_rate=0.5)
         for i in range(len(qtable)):
             print(qtable[i])
 
@@ -47,10 +50,10 @@ class Agent(object):
                             reward + gamma * np.max(self.qtable[new_state, :]) - self.qtable[state, action])
 
                 total_rewards += reward
-                print('total_rewards: {}'.format(total_rewards))
                 state = new_state
                 if done == True:
                     break
+            print('total_rewards: {}'.format(total_rewards))
             # Reduce epsilon value to encourage exploitation and discourage exploration
             epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-decay_rate * episode)
 
@@ -68,8 +71,11 @@ class Agent(object):
         return action
 
 def main():
+    start =  time()
+    tracemalloc.start()
+
     level = '1'
-    instance = '2c'
+    instance = '0'
     myEnv = MarsRoverDiscFactory().get_env(level, instance)
     myEnv.initialize()
     agent = Agent(env=myEnv)
@@ -92,6 +98,10 @@ def main():
         if done:
             break
     print("episode ended with reward {}".format(total_reward))
+    end = time()
+    print(f"total time: {end-start} in sec")
+    print(f"total memory: {tracemalloc.get_traced_memory()} in bytes")
+    tracemalloc.end()
     myEnv.close()
 
 
