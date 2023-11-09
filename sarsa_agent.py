@@ -8,7 +8,7 @@ import tracemalloc
 from matplotlib import pyplot as plt
 
 class Agent(object):
-	def	__init__(self, env=None, gamma=0.99, theta=0.00001, max_iterations=10000):
+	def	__init__(self, env=None, gamma=0.99, theta=0.00001, max_iterations=5000):
 		self.env = env
 		# Set of discrete actions for evaluator environment, shape - (|A|)
 		self.disc_actions = env.disc_actions
@@ -54,7 +54,7 @@ class Agent(object):
 			ep_reward = 0
 			curr_state = self.env.reset()
 			curr_action = greedy(curr_state, epsilon)
-			print(f"ep{iter} start")
+			#print(f"ep{iter} start")
 			while not done:
 				next_state, r, done, info = self.env.step(curr_action)
 				ep_reward += r
@@ -64,9 +64,9 @@ class Agent(object):
 				curr_action = next_action
 			self.ep_rewards.append(ep_reward)
 			print(f"ep{iter} ended with reward {ep_reward}")
-			epsilon = 0.01 + (1-0.01) * np.exp(-decay_rate * iter)
-
-		print(q_table)
+			epsilon = 0.01 + (1 - 0.01) * np.exp(-decay_rate * iter)
+		print("end learning")
+		# print(q_table)
 		return q_table
 	
 
@@ -94,6 +94,7 @@ def main():
 			break
 	print("episode ended with reward {}".format(total_reward))
 	plt.plot(range(0,len(agent.ep_rewards)), agent.ep_rewards)
+	plt.savefig(f'L{agent.env.level} I{agent.env.instance} ep rewards.png')
 	myEnv.close()
 
 
