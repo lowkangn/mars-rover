@@ -5,6 +5,7 @@ from MarsRoverDisc import MarsRoverDiscFactory
 import random
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 class Agent(object):
 	def	__init__(self, env=None, gamma=0.99, theta = 0.00001, max_iterations=10000, plot = False):
@@ -21,6 +22,7 @@ class Agent(object):
 		self.max_iterations = max_iterations
 		self.value_policy, self.policy_function = None, None
 		self.plot = plot
+		self.delta_values =[]
 
 	def initialize(self):
 		self.value_policy, self.policy_function = self.solve()
@@ -58,6 +60,18 @@ class Agent(object):
 			if policy_stable:
 				break
 		
+		if self.plot == True:
+			iteration_x = range(1, len(self.delta_values) + 1)
+
+			plt.plot(iteration_x, self.delta_values, label='Delta values') #Plot delta values and line for theta
+			plt.axhline(y=self.theta, color='red', linestyle='--', label='Theta')
+
+			plt.xlabel('Iterations')
+			plt.ylabel('Delta')
+			plt.title('Convergence of delta values')
+			plt.legend()
+			plt.savefig(f'L{self.env.level} I{self.env.instance} delta convergence.png')
+
 		return value_policy, policy_function
 	
 	def policy_evaluation(self, policy):
@@ -73,7 +87,8 @@ class Agent(object):
 				delta = max(delta, abs(u - q))
 				value_policy[curr_state] = q
 			
-			delta_values.append(delta)
+			self.delta_values.append(delta)
+			
 			if delta <= self.theta:  # Termination
 				break
 		
@@ -93,11 +108,11 @@ class Agent(object):
 def main():
 	t1 = time.time()
 	level = '1'
-	instance = '1c'
+	instance = '0'
 
 	myEnv = MarsRoverDiscFactory().get_env(level, instance)
 	myEnv.initialize()
-	agent = Agent(env = myEnv)
+	agent = Agent(env = myEnv, plot=True)
 	agent.initialize()
 	state = myEnv.reset()
 	total_reward = 0
