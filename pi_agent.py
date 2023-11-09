@@ -7,7 +7,7 @@ import numpy as np
 import time
 
 class Agent(object):
-	def	__init__(self, env=None, gamma=0.99, theta = 0.00001, max_iterations=10000):
+	def	__init__(self, env=None, gamma=0.99, theta = 0.00001, max_iterations=10000, plot = False):
 		self.env = env
 		# Set of discrete actions for evaluator environment, shape - (|A|)
 		self.disc_actions = env.disc_actions
@@ -20,6 +20,7 @@ class Agent(object):
 		self.theta = theta
 		self.max_iterations = max_iterations
 		self.value_policy, self.policy_function = None, None
+		self.plot = plot
 
 	def initialize(self):
 		self.value_policy, self.policy_function = self.solve()
@@ -72,6 +73,7 @@ class Agent(object):
 				delta = max(delta, abs(u - q))
 				value_policy[curr_state] = q
 			
+			delta_values.append(delta)
 			if delta <= self.theta:  # Termination
 				break
 		

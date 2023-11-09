@@ -49,11 +49,11 @@ class Agent(object):
 				q = [self.bellman_update(curr_state, a, value_policy) for a in self.env.disc_actions]
 				q_max = max(q)
 				delta = max(delta, abs(u - q_max))
-				delta_values.append(delta)
 
 				value_policy[curr_state] = q_max
 				policy_function[curr_state] = q.index(q_max)		
-
+			
+			delta_values.append(delta)
 			if delta <= self.theta: # termination
 				break
 		
@@ -67,7 +67,7 @@ class Agent(object):
 			plt.ylabel('Delta')
 			plt.title('Convergence of delta values')
 			plt.legend()
-			plt.show()
+			plt.savefig(f'L{self.env.level} I{self.env.instance} delta convergence.png')
 
 		return value_policy, policy_function
 	
@@ -78,8 +78,8 @@ class Agent(object):
 
 def main():
 	t1 = time.time()
-	level = '2'
-	instance = '0'
+	level = '3'
+	instance = '1c'
 
 	myEnv = MarsRoverDiscFactory().get_env(level, instance)
 	myEnv.initialize()
