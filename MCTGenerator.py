@@ -25,7 +25,7 @@ class Node(object):
             if child.n == 0:
                 return child
             else:
-                uct_ = child.q + (self.c * math.sqrt(log(self.n) / child.n)) # UCT formula
+                uct_ = (child.q / child.n) + (self.c * math.sqrt(log(self.n) / child.n)) # UCT formula
                 if uct_ > uct:
                     uct = uct_
                     best = child
@@ -55,7 +55,7 @@ class MCTGenerator(object):
         return self.root
 
     def next_action(self):
-        action = max(self.root.children, key=lambda child: child.q).action
+        action = max(self.root.children, key=lambda child: child.q / child.n).action
         self.steps.append(action)
         self.reset()
         return action
