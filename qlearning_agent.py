@@ -6,9 +6,12 @@ import numpy as np
 import random
 from collections import deque
 import matplotlib.pyplot as plt
+import time
+import tracemalloc
+import pandas as pd
 
 class Agent(object):
-    def __init__(self, env=None, instance = None, level = None,  gamma=0.99, theta=0.0001, max_iterations=10000):
+    def __init__(self, env=None, instance = None, level = None,  decay_rate=0.005, learning_rate=0.8):
         self.env = env
         self.instance = instance
         self.level = level
@@ -17,26 +20,20 @@ class Agent(object):
         self.disc_actions = env.disc_actions
         # Set of discrete states for evaluator environment, shape - (|S|)
         self.disc_states = env.disc_states
-        # Set of probabilities for transition function for each action from every states, dicitonary of dist[s] = [s', prob, done, info]
-        self.Prob = env.Prob
 
-        self.gamma = gamma
-        self.theta = theta
-        self.max_iterations = max_iterations
+        self.decay_rate = decay_rate
+        self.learning_rate = learning_rate
         self.qtable = None
 
     def initialize(self):
-        qtable = self.qlearning(total_episodes=1000, max_steps=99, epsilon=0.5, learning_rate=0.8)
-        #for i in range(len(qtable)):
-           # print(qtable[i])
-
+        qtable = self.qlearning(total_episodes=1000, max_steps=99, epsilon=0.5)
 
     def agentsStep(self, state):
         action = np.argmax(self.qtable[state, :])
         return action
 
-    def qlearning(self, total_episodes, max_steps, epsilon, learning_rate,
-              max_epsilon = 1.0, min_epsilon = 0.01, decay_rate = 0.005,  gamma=0.99, plot_every=10):
+    def qlearning(self, total_episodes, max_steps, epsilon,
+              max_epsilon = 1.0, min_epsilon = 0.01,  gamma=0.99, plot_every=10):
 
         rewards = []   # List of rewards
         tmp_scores = deque(maxlen=plot_every)     # deque for keeping track of scores
@@ -56,7 +53,7 @@ class Agent(object):
                 # call the epsilon greedy policy to obtain the actions
                 # take the action and observe resulting reward and state
                 new_state, reward, done, info = self.env.step(action)
-                self.qtable[state, action] = self.qtable[state, action] + learning_rate * (
+                self.qtable[state, action] = self.qtable[state, action] + self.learning_rate * (
                             reward + gamma * np.max(self.qtable[new_state, :]) - self.qtable[state, action])
 
                 total_rewards += reward
@@ -66,10 +63,10 @@ class Agent(object):
                     tmp_scores.append(total_rewards)  #for plot
                     break
 
-            if (episode % plot_every == 0): #for plot
-                avg_scores.append(np.mean(tmp_scores))
+            #if (episode % plot_every == 0): #for plot
+                #avg_scores.append(np.mean(tmp_scores))
             
-            epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-decay_rate * episode)  # Reduce epsilon value to encourage exploitation and discourage exploration
+            epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-self.decay_rate * episode)  # Reduce epsilon value to encourage exploitation and discourage exploration
             rewards.append(total_rewards)
 
             if episode % 10 == 0:  # monitor progress
@@ -79,15 +76,15 @@ class Agent(object):
                  print(" ")
 
         # plot performance
-        plt.plot(np.linspace(0,episode,len(avg_scores),endpoint=False), np.asarray(avg_scores))
-        plt.xlabel('Episode Number')
-        plt.ylabel('Average Reward (Over %d Episodes)' % plot_every)
+        #plt.plot(np.linspace(0,episode,len(avg_scores),endpoint=False), np.asarray(avg_scores))
+        #plt.xlabel('Episode Number')
+        #plt.ylabel('Average Reward (Over %d Episodes)' % plot_every)
 
-        filename = "q-learning_i"+str(self.instance)+"_l"+str(self.level)+".png"
-        plt.savefig(filename)
+        #filename = "q-learning_i"+str(self.instance)+"_l"+str(self.level)+".png"
+        #plt.savefig(filename)
 
         # print best 100-episode performance
-        print(('Best Average Reward over %d Episodes: ' % plot_every), np.max(avg_scores))
+        #print(('Best Average Reward over %d Episodes: ' % plot_every), np.max(avg_scores))
 
         return self.qtable
 
@@ -102,9 +99,10 @@ class Agent(object):
             action = random.choice(list(self.disc_actions.keys()))
         return action
 
-def main():
-    instance = '0'
-    level = '2'
+def main(instance, level, learning_rate, decay_rate):
+    t1 = time.time()
+    tracemalloc.start()
+
     myEnv = MarsRoverDiscFactory().get_env(instance=instance, level=level)
     myEnv.initialize()
     agent = Agent(env=myEnv, instance=instance, level=level)
@@ -113,7 +111,7 @@ def main():
     total_reward = 0
 
     for step in range(myEnv.horizon):
-        myEnv.render()
+        # myEnv.render()
         action = agent.agentsStep(state)
         next_state, reward, done, info = myEnv.step(action)
         total_reward += reward
@@ -129,5 +127,59 @@ def main():
     print("episode ended with reward {}".format(total_reward))
     myEnv.close()
 
+    # Keep track of runtime and memory used 
+    t2 = time.time()
+    runtime = t2-t1
+    memory = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
 
-main()
+    return memory, runtime, total_reward
+
+# Perform hyperparameter grid search
+header = ['Learning rate', 'Decay rate', 'Memory', 'Runtime', 'Total reward'] 
+df = pd.DataFrame([header])
+df.to_excel('HyperparSearch.xlsx', index=False)
+
+learning_rate = [0.2, 0.4, 0.6, 0.8]
+decay_rate  = [0.001, 0.005, 0.05, 0.1, 0.2]
+
+for l in learning_rate:
+    for d in decay_rate:
+
+        # Get results
+        memory, runtime, total_reward = main(instance='3c', level='2', learning_rate=l, decay_rate=d)
+        trial_result = [l, d, memory, runtime, total_reward]
+
+        # Update excel sheet
+        df = pd.DataFrame([trial_result])
+        existing_data = pd.read_excel('HyperparSearch.xlsx')
+        updated_data = pd.concat([existing_data, df], ignore_index=False)
+        updated_data.to_excel("HyperparSearch.xlsx", index=False)
+
+
+# Run all levels/ instances
+#header = ['Level', 'Instance', 'Memory', 'Runtime', 'Total reward'] 
+#df = pd.DataFrame([header])
+#df.to_excel('Qlearning_performance.xlsx', index=False)
+
+#levels = ['1', '2', '3']
+##instances = ['0', '1c', '2c', '3c']
+#learning_rate = 0.8
+#decay_rate = 0.005
+
+#for l in level:
+    #for i in instance:
+
+        # Get results
+        #memory, runtime, total_reward = main(instance='3c', level='2', learning_rate=learning_rate, decay_rate=decay_rate)
+        #trial_result = [l, i, memory, runtime, total_reward]
+
+        # Update excel sheet
+        #df = pd.DataFrame([trial_result])
+        #existing_data = pd.read_excel('Qlearning_performance.xlsx')
+        #updated_data = pd.concat([existing_data, df], ignore_index=False)
+        #updated_data.to_excel('Qlearning_performance.xlsx', index=False)
+
+
+# Run single level/ instance
+#memory, runtime, total_reward = main(instance='3c', level='2', learning_rate=l, decay_rate=d)
