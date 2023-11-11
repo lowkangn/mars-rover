@@ -35,6 +35,8 @@ class Agent(object):
     def qlearning(self, total_episodes, max_steps, epsilon,
               max_epsilon = 1.0, min_epsilon = 0.01,  gamma=0.99, plot_every=10):
 
+        x_list = []
+        y_list = []
         rewards = []   # List of rewards
         tmp_scores = deque(maxlen=plot_every)     # deque for keeping track of scores
         avg_scores = deque(maxlen=total_episodes)   # average scores over every plot_every episodes
@@ -59,12 +61,15 @@ class Agent(object):
                 total_rewards += reward
                 state = new_state
 
-                if done == True:
-                    tmp_scores.append(total_rewards)  #for plot
-                    break
+                x_list.append(self.env.disc_states[state][0][0])
+                y_list.append(self.env.disc_states[state][0][1])
 
-            #if (episode % plot_every == 0): #for plot
-                #avg_scores.append(np.mean(tmp_scores))
+                if done == True:
+                    break
+            
+            tmp_scores.append(total_rewards)  #for plot
+            if (episode % plot_every == 0): #for plot
+                avg_scores.append(np.mean(tmp_scores))
             
             epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-self.decay_rate * episode)  # Reduce epsilon value to encourage exploitation and discourage exploration
             rewards.append(total_rewards)
@@ -75,16 +80,30 @@ class Agent(object):
                  print("Total rewards in episode", episode, " is", total_rewards)
                  print(" ")
 
-        # plot performance
-        #plt.plot(np.linspace(0,episode,len(avg_scores),endpoint=False), np.asarray(avg_scores))
-        #plt.xlabel('Episode Number')
-        #plt.ylabel('Average Reward (Over %d Episodes)' % plot_every)
+        # Plot performance in term of convergence
+        plt.plot(np.linspace(0,episode,len(avg_scores),endpoint=False), np.asarray(avg_scores))
+        plt.xlabel('Episode Number', fontsize=6)
+        plt.ylabel('Average Reward (Over %d Episodes)' % plot_every, fontsize=6)
+        plt.title("Q-learning average reward during learning(level="+str(self.level)+", instance="+str(self.instance)+")", fontsize=8)
 
-        #filename = "q-learning_i"+str(self.instance)+"_l"+str(self.level)+".png"
-        #plt.savefig(filename)
+        filename = "Ravg_q-learning_i"+str(self.instance)+"_l"+str(self.level)+".png"
+        plt.savefig(filename)
+        plt.close()
+
+        # Create heatmap of visited states
+        heatmap, xedges, yedges = np.histogram2d(x_list, y_list, bins=(abs(min(x_list)-max(x_list)), abs(min(y_list)-max(y_list))))
+        plt.imshow(heatmap, cmap='viridis', origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
+        plt.xlabel("X Position", fontsize=6)
+        plt.ylabel("Y Position", fontsize=6)
+        plt.title("Q-learning visited position during learning (level="+str(self.level)+"instance="+str(self.instance)+")", fontsize=8)
+        plt.colorbar(label="Visit Count")
+
+        filename = "hm_q-learning_i"+str(self.instance)+"_l"+str(self.level)+".png"
+        plt.savefig(filename)
+        plt.close()
 
         # print best 100-episode performance
-        #print(('Best Average Reward over %d Episodes: ' % plot_every), np.max(avg_scores))
+        print(('Best Average Reward over %d Episodes: ' % plot_every), np.max(avg_scores))
 
         return self.qtable
 
@@ -171,7 +190,7 @@ for l in learning_rate:
     #for i in instance:
 
         # Get results
-        #memory, runtime, total_reward = main(instance='3c', level='2', learning_rate=learning_rate, decay_rate=decay_rate)
+        #memory, runtime, total_reward = main(instance=i, level=l, learning_rate=learning_rate, decay_rate=decay_rate)
         #trial_result = [l, i, memory, runtime, total_reward]
 
         # Update excel sheet
