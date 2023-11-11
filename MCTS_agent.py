@@ -35,7 +35,7 @@ class MCTSAgent(object):
 
 
 def main():
-	myEnv = MarsRoverDiscFactory().get_env(level='3', instance='5c')
+	myEnv = MarsRoverDiscFactory().get_env(level='3', instance='0')
 	agent = MCTSAgent(env=myEnv)
 	agent.solve()
 	state = myEnv.reset()
@@ -56,6 +56,7 @@ def main():
 		if done:
 			break
 	print("episode ended with reward {}".format(total_reward))
+	myEnv.save_render()
 	myEnv.close()
 
 if __name__ == "__main__":

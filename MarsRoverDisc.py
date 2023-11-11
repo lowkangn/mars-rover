@@ -2,9 +2,14 @@ from gym import Env
 import itertools
 import numpy as np
 import pickle
+import glob
+import os
+import re
 from bidict import bidict
 from pyRDDLGym import RDDLEnv
+from PIL import Image
 from pyRDDLGym.Visualizer.MarsRoverViz import MarsRoverVisualizer
+from pathlib import Path
 from TransitionModelGenerator import TransitionModelGenerator
 
 """
@@ -35,7 +40,11 @@ class MarsRoverDisc(Env):
         self.discount = self.base_env.discount
         
         # set up the environment visualizer
+        self._n_frame = 0
+        self.render_path = f'output/level {level}/instance{instance}'
+        self.save_path = os.path.join(self.render_path, 'marsrover' + '_{}' + '.png')
         self.base_env.set_visualizer(MarsRoverVisualizer)
+        Path(self.render_path).mkdir(parents=True, exist_ok=True)
 
         # global variables (applicable to all levels)
         self.mineral_count = int(len(self.base_env.sampler.subs['MINERAL-VALUE']))
@@ -103,7 +112,32 @@ class MarsRoverDisc(Env):
         return self.state2disc(state)
     
     def render(self):
-        self.base_env.render()
+        file_path = self.save_path.format(str(self._n_frame).rjust(10, '0'))
+        image = self.base_env.render(to_display=False)
+        image.save(file_path)
+        self._n_frame += 1 
+
+    def save_render(self):       
+        load_path = self.save_path.format('*')
+
+        def getOrder(frame):
+            return int(re.search('\d+', frame).group(0))
+
+        files = glob.glob(load_path)
+        files.sort(key=getOrder)
+
+        # images = map(Image.open, glob.glob(load_path))
+        images = map(Image.open, files)
+        
+        save_path = os.path.join(self.render_path, 'marsrover.gif')
+        frame0 = next(images, None)
+        if frame0 is not None:
+            frame0.save(fp=save_path,
+                        format='GIF',
+                        append_images=images,
+                        save_all=True,
+                        duration=100,
+                        loop=False) 
     
     def disc2action(self, a):
         '''
