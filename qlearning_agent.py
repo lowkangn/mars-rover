@@ -105,7 +105,7 @@ def main(instance, level, learning_rate, decay_rate):
 
     myEnv = MarsRoverDiscFactory().get_env(instance=instance, level=level)
     myEnv.initialize()
-    agent = Agent(env=myEnv, instance=instance, level=level)
+    agent = Agent(env=myEnv, instance=instance, level=level,  learning_rate=learning_rate, decay_rate=decay_rate)
     agent.initialize() #qlearning
     state = myEnv.reset()
     total_reward = 0
@@ -138,7 +138,7 @@ def main(instance, level, learning_rate, decay_rate):
 # Perform hyperparameter grid search
 header = ['Learning rate', 'Decay rate', 'Memory', 'Runtime', 'Total reward'] 
 df = pd.DataFrame([header])
-df.to_excel('HyperparSearch.xlsx', index=False)
+df.to_excel('Q_HyperparSearch.xlsx', index=False)
 
 learning_rate = [0.2, 0.4, 0.6, 0.8]
 decay_rate  = [0.001, 0.005, 0.05, 0.1, 0.2]
@@ -152,9 +152,9 @@ for l in learning_rate:
 
         # Update excel sheet
         df = pd.DataFrame([trial_result])
-        existing_data = pd.read_excel('HyperparSearch.xlsx')
+        existing_data = pd.read_excel('Q_HyperparSearch.xlsx')
         updated_data = pd.concat([existing_data, df], ignore_index=False)
-        updated_data.to_excel("HyperparSearch.xlsx", index=False)
+        updated_data.to_excel("Q_HyperparSearch.xlsx", index=False)
 
 
 # Run all levels/ instances
