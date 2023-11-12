@@ -35,8 +35,10 @@ class Agent(object):
     def qlearning(self, total_episodes, max_steps, epsilon,
               max_epsilon = 1.0, min_epsilon = 0.01,  gamma=0.99, plot_every=10):
 
+        # For heatmap
         x_list = []
         y_list = []
+
         rewards = []   # List of rewards
         tmp_scores = deque(maxlen=plot_every)     # deque for keeping track of scores
         avg_scores = deque(maxlen=total_episodes)   # average scores over every plot_every episodes
@@ -61,6 +63,7 @@ class Agent(object):
                 total_rewards += reward
                 state = new_state
 
+                # For heatmap
                 x_list.append(self.env.disc_states[state][0][0])
                 y_list.append(self.env.disc_states[state][0][1])
 
@@ -95,14 +98,14 @@ class Agent(object):
         plt.imshow(heatmap, cmap='viridis', origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
         plt.xlabel("X Position", fontsize=6)
         plt.ylabel("Y Position", fontsize=6)
-        plt.title("Q-learning visited position during learning (level="+str(self.level)+"instance="+str(self.instance)+")", fontsize=8)
+        plt.title("Q-learning visited position during learning (level="+str(self.level)+", instance="+str(self.instance)+")", fontsize=8)
         plt.colorbar(label="Visit Count")
 
         filename = "hm_q-learning_i"+str(self.instance)+"_l"+str(self.level)+".png"
         plt.savefig(filename)
         plt.close()
 
-        # print best 100-episode performance
+        # print best 100-episode performance 
         print(('Best Average Reward over %d Episodes: ' % plot_every), np.max(avg_scores))
 
         return self.qtable
@@ -155,49 +158,49 @@ def main(instance, level, learning_rate, decay_rate):
     return memory, runtime, total_reward
 
 # Perform hyperparameter grid search
-header = ['Learning rate', 'Decay rate', 'Memory', 'Runtime', 'Total reward'] 
-df = pd.DataFrame([header])
-df.to_excel('Q_HyperparSearch.xlsx', index=False)
-
-learning_rate = [0.2, 0.4, 0.6, 0.8]
-decay_rate  = [0.001, 0.005, 0.05, 0.1, 0.2]
-
-for l in learning_rate:
-    for d in decay_rate:
-
-        # Get results
-        memory, runtime, total_reward = main(instance='3c', level='2', learning_rate=l, decay_rate=d)
-        trial_result = [l, d, memory, runtime, total_reward]
-
-        # Update excel sheet
-        df = pd.DataFrame([trial_result])
-        existing_data = pd.read_excel('Q_HyperparSearch.xlsx')
-        updated_data = pd.concat([existing_data, df], ignore_index=False)
-        updated_data.to_excel("Q_HyperparSearch.xlsx", index=False)
-
-
-# Run all levels/ instances
-#header = ['Level', 'Instance', 'Memory', 'Runtime', 'Total reward'] 
+#header = ['Learning rate', 'Decay rate', 'Memory', 'Runtime', 'Total reward'] 
 #df = pd.DataFrame([header])
-#df.to_excel('Qlearning_performance.xlsx', index=False)
+#df.to_excel('Q_HyperparSearch.xlsx', index=False)
 
-#levels = ['1', '2', '3']
-##instances = ['0', '1c', '2c', '3c']
-#learning_rate = 0.8
-#decay_rate = 0.005
+#learning_rate = [0.2, 0.4, 0.6, 0.8]
+#decay_rate  = [0.001, 0.005, 0.05, 0.1, 0.2]
 
-#for l in level:
-    #for i in instance:
+#for l in learning_rate:
+    #for d in decay_rate:
 
         # Get results
-        #memory, runtime, total_reward = main(instance=i, level=l, learning_rate=learning_rate, decay_rate=decay_rate)
-        #trial_result = [l, i, memory, runtime, total_reward]
+        #memory, runtime, total_reward = main(instance='3c', level='2', learning_rate=l, decay_rate=d)
+        #trial_result = [l, d, memory, runtime, total_reward]
 
         # Update excel sheet
         #df = pd.DataFrame([trial_result])
-        #existing_data = pd.read_excel('Qlearning_performance.xlsx')
+        #existing_data = pd.read_excel('Q_HyperparSearch.xlsx')
         #updated_data = pd.concat([existing_data, df], ignore_index=False)
-        #updated_data.to_excel('Qlearning_performance.xlsx', index=False)
+        #updated_data.to_excel("Q_HyperparSearch.xlsx", index=False)
+
+
+# Run all levels/ instances
+header = ['Level', 'Instance', 'Memory', 'Runtime', 'Total reward'] 
+df = pd.DataFrame([header])
+df.to_excel('Qlearning_performance.xlsx', index=False)
+
+levels = ['3']
+instances = ['2c', '3c']
+learning_rate = 0.8
+decay_rate = 0.005
+
+for l in levels:
+    for i in instances:
+
+        # Get results
+        memory, runtime, total_reward = main(instance=i, level=l, learning_rate=learning_rate, decay_rate=decay_rate)
+        trial_result = [l, i, memory, runtime, total_reward]
+
+        # Update excel sheet
+        df = pd.DataFrame([trial_result])
+        existing_data = pd.read_excel('Qlearning_performance.xlsx')
+        updated_data = pd.concat([existing_data, df], ignore_index=False)
+        updated_data.to_excel('Qlearning_performance.xlsx', index=False)
 
 
 # Run single level/ instance

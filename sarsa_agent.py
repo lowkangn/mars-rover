@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 class Agent(object):
-	def	__init__(self, env=None, instance = None, level = None,  decay_rate=0.005, learning_rate=0.8, gamma=0.99, theta=0.00001, max_iterations=500):
+	def	__init__(self, env=None, instance = None, level = None,  decay_rate=0.005, learning_rate=0.8, gamma=0.99, theta=0.00001, max_iterations=5000):
 		self.env = env
 		self.instance = instance
 		self.level = level
@@ -151,49 +151,49 @@ def main(instance, level, learning_rate, decay_rate):
 	return memory, runtime, total_reward
 
 # Perform hyperparameter grid search
-header = ['Learning rate', 'Decay rate', 'Memory', 'Runtime', 'Total reward'] 
-df = pd.DataFrame([header])
-df.to_excel('SARSA_HyperparSearch.xlsx', index=False)
-
-learning_rate = [0.2, 0.4, 0.6, 0.8]
-decay_rate  = [0.001, 0.005, 0.05, 0.1, 0.2]
-
-for l in learning_rate:
-    for d in decay_rate:
-
-        # Get results
-        memory, runtime, total_reward = main(instance='3c', level='2', learning_rate=l, decay_rate=d)
-        trial_result = [l, d, memory, runtime, total_reward]
-
-        # Update excel sheet
-        df = pd.DataFrame([trial_result])
-        existing_data = pd.read_excel('SARSA_HyperparSearch.xlsx')
-        updated_data = pd.concat([existing_data, df], ignore_index=False)
-        updated_data.to_excel("SARSA_HyperparSearch.xlsx", index=False)
-
-
-# Run all levels/ instances
-#header = ['Level', 'Instance', 'Memory', 'Runtime', 'Total reward'] 
+#header = ['Learning rate', 'Decay rate', 'Memory', 'Runtime', 'Total reward'] 
 #df = pd.DataFrame([header])
-#df.to_excel('SARSA_performance.xlsx', index=False)
+#df.to_excel('SARSA_HyperparSearch.xlsx', index=False)
 
-#levels = ['1', '2', '3']
-##instances = ['0', '1c', '2c', '3c']
-#learning_rate = 0.8
-#decay_rate = 0.005
+#learning_rate = [0.4, 0.6, 0.8]
+#decay_rate  = [0.001, 0.005, 0.05, 0.1]
 
-#for l in level:
-    #for i in instance:
+#for l in learning_rate:
+    #for d in decay_rate:
 
         # Get results
-        #memory, runtime, total_reward = main(instance=i, level=l, learning_rate=learning_rate, decay_rate=decay_rate)
-        #trial_result = [l, i, memory, runtime, total_reward]
+        #memory, runtime, total_reward = main(instance='3c', level='2', learning_rate=l, decay_rate=d)
+        #trial_result = [l, d, memory, runtime, total_reward]
 
         # Update excel sheet
         #df = pd.DataFrame([trial_result])
-        #existing_data = pd.read_excel('SARSA_performance.xlsx')
+        #existing_data = pd.read_excel('SARSA_HyperparSearch.xlsx')
         #updated_data = pd.concat([existing_data, df], ignore_index=False)
-        #updated_data.to_excel('SARSA_performance.xlsx', index=False)
+        #updated_data.to_excel("SARSA_HyperparSearch.xlsx", index=False)
+
+
+# Run all levels/ instances
+header = ['Level', 'Instance', 'Memory', 'Runtime', 'Total reward'] 
+df = pd.DataFrame([header])
+df.to_excel('SARSA_performance.xlsx', index=False)
+
+levels = ['1', '2', '3']
+instances = ['0', '1c', '2c', '3c']
+learning_rate = 0.8
+decay_rate = 0.005
+
+for l in levels:
+    for i in instances:
+
+        # Get results
+        memory, runtime, total_reward = main(instance=i, level=l, learning_rate=learning_rate, decay_rate=decay_rate)
+        trial_result = [l, i, memory, runtime, total_reward]
+
+        # Update excel sheet
+        df = pd.DataFrame([trial_result])
+        existing_data = pd.read_excel('SARSA_performance.xlsx')
+        updated_data = pd.concat([existing_data, df], ignore_index=False)
+        updated_data.to_excel('SARSA_performance.xlsx', index=False)
 
 
 # Run single level/ instance
