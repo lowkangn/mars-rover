@@ -6,8 +6,12 @@ from MCTGenerator import MCTGenerator
 from time import time
 import tracemalloc
 
+import numpy as np
+import matplotlib.pyplot as plt
+
 class MCTSAgent(object):
 	def	__init__(self, env=None, gamma=0.99, max_iterations=100, max_depth=25):
+		self.level, self.instance = env.level, env.instance
 		self.max_iterations = max_iterations
 		self.mct = MCTGenerator(env, gamma, max_depth)
 		self.next_step = 0
@@ -33,9 +37,21 @@ class MCTSAgent(object):
 
 			print(self.mct.next_action())
 
+		# Create heatmap of visited states
+		heatmap, xedges, yedges = np.histogram2d(self.mct.x_list, self.mct.y_list, bins=(abs(min(self.mct.x_list)-max(self.mct.x_list)), abs(min(self.mct.y_list)-max(self.mct.y_list))))
+		plt.imshow(heatmap, cmap='viridis', origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
+		plt.xlabel("X Position", fontsize=6)
+		plt.ylabel("Y Position", fontsize=6)
+		plt.title("MCTS visited position during rollouts (level="+self.level+", instance="+self.instance+")", fontsize= 8)
+		plt.colorbar(label="Visit Count")
+			
+		filename = "hm_MCTS_i"+str(self.instance)+"_l"+str(self.level)+".png"
+		plt.savefig(filename)
+		plt.close()
+
 
 def main():
-	myEnv = MarsRoverDiscFactory().get_env(level='3', instance='0')
+	myEnv = MarsRoverDiscFactory().get_env(level='3', instance='4c')
 	agent = MCTSAgent(env=myEnv)
 	agent.solve()
 	state = myEnv.reset()

@@ -49,6 +49,8 @@ class MCTGenerator(object):
         # Store the sequence of actions found by MCTS for running the simulation later.
 		# Since the environment is deterministic, the sequence of steps can be predetermined.
         self.steps = []
+        self.x_list = []
+        self.y_list = []
 
     def reset(self):
         self.root = Node(self.action_count, None)
@@ -76,7 +78,10 @@ class MCTGenerator(object):
         a = random.sample(list(node.unexplored), 1)[0]
         child = Node(self.action_count, a)
         node.add_child(child)
-        _, r, _, _ = self.env.step(a)
+        s_, r, _, _ = self.env.step(a)
+        rover_pos = self.env.disc_states[s_][0]
+        self.x_list.append(rover_pos[0])
+        self.y_list.append(rover_pos[1])
         return child, r
 
     def simulate(self, initial_r):
@@ -84,9 +89,12 @@ class MCTGenerator(object):
         discount = 1
         for _ in range(min(self.max_depth, self.horizon - len(self.steps))):
             random_a = random.randrange(self.action_count)
-            _, reward, done, _ = self.env.step(random_a)
+            s_, reward, done, _ = self.env.step(random_a)
             r += (reward * discount)
             discount *= self.gamma
+            rover_pos = self.env.disc_states[s_][0]
+            self.x_list.append(rover_pos[0])
+            self.y_list.append(rover_pos[1])
             if done:
                 break
         return r
