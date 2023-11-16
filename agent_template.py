@@ -2,6 +2,8 @@
 Adapted from agent template given in assignment 2.
 '''
 from MarsRoverDisc import MarsRoverDisc
+from time import time
+import tracemalloc
 
 class Agent(object):
 	def	__init__(self, env=None, gamma=0.99, theta=0.00001, max_iterations=10000):
@@ -56,4 +58,11 @@ def main():
 	print("episode ended with reward {}".format(total_reward))
 	myEnv.close()
 
-main()
+if __name__ == "__main__":
+	start = time()
+	tracemalloc.start()
+	main()
+	end = time()
+	print(f"total time taken: {end - start} (in s)")
+	print(f"memory used (current, peak): {tracemalloc.get_traced_memory()} (in bytes)")
+	tracemalloc.stop()

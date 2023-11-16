@@ -21,6 +21,7 @@ non-fluents rover2 {
 
 	non-fluents {
 		MAX-VEL(d1) = 1;
+		MAX-POWER(d1) = 1;
 
         MINERAL-POS-X(m1) = 5;
 		MINERAL-POS-Y(m1) = 5;
