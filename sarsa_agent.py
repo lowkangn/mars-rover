@@ -96,7 +96,8 @@ class Agent(object):
 		plt.title("SARSA average reward during learning (level="+str(self.level)+", instance="+str(self.instance)+")", fontsize= 8)
 		filename = "SARSA_i"+str(self.instance)+"_l"+str(self.level)+".png"
 		plt.savefig(filename)
-		
+		plt.close()
+
         # Create heatmap of visited states
 		heatmap, xedges, yedges = np.histogram2d(x_list, y_list, bins=(abs(min(x_list)-max(x_list)), abs(min(y_list)-max(y_list))))
 		plt.imshow(heatmap, cmap='viridis', origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])

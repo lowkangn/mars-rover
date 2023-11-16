@@ -42,12 +42,15 @@ class Agent(object):
 		
 		# Initialize a random policy
 		policy_function = np.random.randint(0, num_actions, size=num_states)
-		
+		action_change_list = []
+
 		for _ in range(self.max_iterations):
 			# Policy Evaluation
 			value_policy = self.policy_evaluation(policy_function)
 			
 			policy_stable = True
+			action_changed = 0
+
 			for curr_state in range(num_states):
 				# Policy Improvement
 				old_action = policy_function[curr_state]
@@ -55,22 +58,22 @@ class Agent(object):
 				policy_function[curr_state] = new_action
 				
 				if old_action != new_action:
+					action_changed +=1
 					policy_stable = False
+
+			action_change_list.append(action_changed)
 			
 			if policy_stable:
 				break
 		
 		if self.plot == True:
-			iteration_x = range(1, len(self.delta_values) + 1)
+			iteration_x = range(1, _+2)
 
-			plt.plot(iteration_x, self.delta_values, label='Delta values') #Plot delta values and line for theta
-			plt.axhline(y=self.theta, color='red', linestyle='--', label='Theta')
-
+			plt.plot(iteration_x, action_change_list) #Plot action changes
 			plt.xlabel('Iterations')
-			plt.ylabel('Delta')
-			plt.title('Convergence of delta values')
-			plt.legend()
-			plt.savefig(f'L{self.env.level} I{self.env.instance} delta convergence.png')
+			plt.ylabel('Number of action changes')
+			plt.title('Convergence of policy')
+			plt.savefig(f'L{self.env.level} I{self.env.instance} policy convergence.png')
 
 		return value_policy, policy_function
 	
@@ -107,8 +110,8 @@ class Agent(object):
 
 def main():
 	t1 = time.time()
-	level = '1'
-	instance = '0'
+	level = '3'
+	instance = '1c'
 
 	myEnv = MarsRoverDiscFactory().get_env(level, instance)
 	myEnv.initialize()

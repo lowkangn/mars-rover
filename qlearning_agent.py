@@ -90,7 +90,7 @@ class Agent(object):
         plt.title("Q-learning average reward during learning(level="+str(self.level)+", instance="+str(self.instance)+")", fontsize=8)
 
         filename = "Ravg_q-learning_i"+str(self.instance)+"_l"+str(self.level)+".png"
-        plt.savefig(filename)
+        #plt.savefig(filename)
         plt.close()
 
         # Create heatmap of visited states
@@ -102,7 +102,7 @@ class Agent(object):
         plt.colorbar(label="Visit Count")
 
         filename = "hm_q-learning_i"+str(self.instance)+"_l"+str(self.level)+".png"
-        plt.savefig(filename)
+        #plt.savefig(filename)
         plt.close()
 
         # print best 100-episode performance 
@@ -184,8 +184,8 @@ header = ['Level', 'Instance', 'Memory', 'Runtime', 'Total reward']
 df = pd.DataFrame([header])
 df.to_excel('Qlearning_performance.xlsx', index=False)
 
-levels = ['3']
-instances = ['2c', '3c']
+levels = ['1','2','3']
+instances = ['0', '1c','2c', '3c']
 learning_rate = 0.8
 decay_rate = 0.005
 
